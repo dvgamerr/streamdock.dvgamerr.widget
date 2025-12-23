@@ -1,8 +1,4 @@
 {
   "files.eol": "\n",
-  "css.lint.unknownAtRules": "ignore",
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSaveMode": "file",
-  "files.autoSave": "onFocusChange"
+  "css.lint.unknownAtRules": "ignore"
 }
