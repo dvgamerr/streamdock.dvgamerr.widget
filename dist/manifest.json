@@ -1,0 +1,52 @@
+{
+  "Actions": [
+    {
+      "UUID": "com.streamdock.gold.ylgbullion.action1",
+      "Icon": "images/icon.png",
+      "state": 0,
+      "States": [
+        {
+          "FontSize": "10",
+          "TitleAlignment": "bottom",
+          "Image": "images/default.png"
+        }
+      ],
+      "Settings": {},
+      "UserTitleEnabled": false,
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Keypad",
+        "Information"
+      ],
+      "Name": "Gold Price",
+      "Tooltip": "Display current gold price from YLG Bullion",
+      "PropertyInspectorPath": "index.html"
+    }
+  ],
+  "Version": "1.0.0",
+  "Name": "Gold Price - YLG Bullion",
+  "Icon": "images/icon.png",
+  "CategoryIcon": "images/icon.png",
+  "Category": "Gold Price - YLG Bullion",
+  "Description": "Display gold prices from YLG Bullion API",
+  "CodePath": "index.html",
+  "SDKVersion": 2,
+  "Author": "MiraBox",
+  "URL": "http://video.hotspotek.com.cn/",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "7"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "6.5"
+  },
+  "ApplicationsToMonitor": {
+    "windows": []
+  }
+}
