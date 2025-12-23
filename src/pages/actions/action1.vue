@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { usePropertyStore, useWatchEvent, TabView } from '@/hooks/property';
+  import { usePropertyStore, useWatchEvent } from '@/hooks/property';
   import { useI18nStore } from '@/hooks/i18n';
 
   // Event listener

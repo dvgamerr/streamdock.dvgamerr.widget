@@ -2,10 +2,7 @@
   "files.eol": "\n",
   "css.lint.unknownAtRules": "ignore",
   "editor.formatOnSave": true,
-  "editor.formatOnType": false, // required
-  "editor.formatOnPaste": true, // optional
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSaveMode": "file", // required to format on save
-  "files.autoSave": "onFocusChange", // optional but recommended
-  "vs-code-prettier-eslint.prettierLast": false // set as "true" to run 'prettier' last not first
+  "editor.formatOnSaveMode": "file",
+  "files.autoSave": "onFocusChange"
 }
