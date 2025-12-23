@@ -30,7 +30,7 @@ export const usePluginStore = defineStore('pluginStore', () => {
   const server = new WebSocket('ws://127.0.0.1:' + window.argv[0]);
   server.onopen = () => server.send(JSON.stringify({ event: window.argv[2], uuid: window.argv[1] }));
   server.onmessage = (e) => {
-    message.value = JSON.parse(e.data)
+    message.value = JSON.parse(e.data);
     // console.log(e.data)
   };
 
@@ -47,38 +47,43 @@ export const usePluginStore = defineStore('pluginStore', () => {
   // Get global settings data
   const getGlobalSettings = () => {
     server.send(JSON.stringify({ event: 'getGlobalSettings', context: window.argv[1] }));
-  }
+  };
 
   // Set background
   const setBackground = (img: string, device: string, clearIcon = true) => {
-    server.send(JSON.stringify({
-      "event": "setBackground",
-      "device": device,
-      "payload": {
-        "image": img,
-        "clearIcon": clearIcon
-      }
-    }));
+    server.send(
+      JSON.stringify({
+        event: 'setBackground',
+        device: device,
+        payload: {
+          image: img,
+          clearIcon: clearIcon
+        }
+      })
+    );
   };
 
   // Notify software that background stopped
   const stopBackground = (device: string) => {
-    server.send(JSON.stringify({
-      "event": "stopBackground",
-      "device": device,
-      "payload": {
-        "clearIcon": true // If clearIcon was set to true when setting background, this parameter needs to be true (tells software to restore icon)
-      }
-    }));
+    server.send(
+      JSON.stringify({
+        event: 'stopBackground',
+        device: device,
+        payload: {
+          clearIcon: true // If clearIcon was set to true when setting background, this parameter needs to be true (tells software to restore icon)
+        }
+      })
+    );
   };
 
   // Get user information
   const getUserInfo = () => {
-    server.send(JSON.stringify({
-      "event": "getUserInfo"
-    }));
+    server.send(
+      JSON.stringify({
+        event: 'getUserInfo'
+      })
+    );
   };
-
 
   // Action data storage
   class Actions {
@@ -167,14 +172,13 @@ export const usePluginStore = defineStore('pluginStore', () => {
         JSON.stringify({
           event: 'registrationScreenSaverEvent',
           device: device,
-          context: this.context,
-        }),
+          context: this.context
+        })
       );
     };
   }
 
   class EventEmitter {
-
     events: { [key: string]: any[] };
     constructor() {
       this.events = {};
@@ -198,7 +202,7 @@ export const usePluginStore = defineStore('pluginStore', () => {
     // Emit event
     emit(event: string, data: any) {
       if (!this.events[event]) return;
-      this.events[event].forEach(listener => listener(data));
+      this.events[event].forEach((listener) => listener(data));
     }
   }
 
@@ -230,10 +234,9 @@ export const usePluginStore = defineStore('pluginStore', () => {
 type MessageTypes = { plugin: StreamDock.PluginMessage; action: StreamDock.ActionMessage };
 type payload = {
   settings: any;
-}
+};
 export const useWatchEvent = <T extends keyof MessageTypes>(type: T, MessageEvents: MessageTypes[T]) => {
   const plugin = usePluginStore();
-
 
   if (type === 'plugin') {
     return watch(

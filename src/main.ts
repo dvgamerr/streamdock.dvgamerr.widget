@@ -3,7 +3,6 @@ import Plugin from '@/plugin/index.vue';
 import Property from '@/pages/index.vue';
 import './main.css';
 
-
 // Software interface
 window.connectSDSocket = function () {
   window.argv = [arguments[0], arguments[1], arguments[2], JSON.parse(arguments[3]), arguments[4] && JSON.parse(arguments[4])];

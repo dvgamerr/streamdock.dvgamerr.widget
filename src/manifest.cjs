@@ -26,11 +26,10 @@ const Plugin = {
     }
   },
   Software: {
-    MinimumVersion: "6.5"
+    MinimumVersion: '6.5'
   },
   ApplicationsToMonitor: {
-    windows: [
-    ]
+    windows: []
   }
 };
 
@@ -64,4 +63,12 @@ const Actions = [
 ];
 
 // !! Do not modify !!
-module.exports = { PUUID: Plugin.UUID, ApplicationsToMonitor: Plugin.ApplicationsToMonitor, Software: Plugin.Software, Version: Plugin.version, CategoryIcon: Plugin.Icon, i18n: Plugin.i18n, Actions };
+module.exports = {
+  PUUID: Plugin.UUID,
+  ApplicationsToMonitor: Plugin.ApplicationsToMonitor,
+  Software: Plugin.Software,
+  Version: Plugin.version,
+  CategoryIcon: Plugin.Icon,
+  i18n: Plugin.i18n,
+  Actions
+};
