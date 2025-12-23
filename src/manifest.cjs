@@ -12,16 +12,16 @@
  */
 
 const Plugin = {
-  UUID: 'com.streamdock.gold.ylgbullion',
+  UUID: 'com.streamdock.dvgamerr.widget',
   version: '1.0.0',
   Icon: 'images/icon.png',
   i18n: {
     en: {
-      Name: 'Gold Price - YLG Bullion',
+      Name: 'dvgamerr - widget',
       Description: 'Display gold prices from YLG Bullion API'
     },
     zh_CN: {
-      Name: '金价显示 - YLG Bullion',
+      Name: 'dvgamerr - widget',
       Description: '显示来自 YLG Bullion API 的黄金价格'
     }
   },
@@ -37,7 +37,7 @@ const Plugin = {
 const Actions = [
   {
     UUID: 'action1',
-    Icon: 'images/icon.png',
+    Icon: 'images/ylg.png',
     i18n: {
       en: {
         Name: 'Gold Price',
