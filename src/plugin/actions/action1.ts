@@ -6,6 +6,7 @@ export default function (name: string) {
   // Event listener
   const plugin = usePluginStore();
   let intervalId: string | null = null;
+  let currentInterval: number = 15;
 
   // Fetch gold price from YLG Bullion API
   const fetchGoldPrice = async () => {
@@ -87,13 +88,17 @@ export default function (name: string) {
 
   useWatchEvent('action', {
     ActionID,
-    willAppear({ context }) {
+    willAppear({ context, payload }) {
       console.log('Action created:', context);
 
-      // Start fetching gold price every 15 seconds
+      // Get interval from settings (default 15 seconds)
+      const interval = (payload.settings as any)?.interval || 15;
+      currentInterval = interval;
+
+      // Start fetching gold price with configured interval
       if (!intervalId) {
         intervalId = `gold-price-${ActionID}`;
-        plugin.Interval(intervalId, 15000, fetchGoldPrice);
+        plugin.Interval(intervalId, interval * 1000, fetchGoldPrice);
         fetchGoldPrice(); // Fetch immediately
       }
     },
@@ -112,6 +117,18 @@ export default function (name: string) {
       const action = plugin.getAction(context);
       if (action) {
         action.openUrl('https://th.tradingview.com/symbols/XAUUSD/');
+      }
+    },
+    didReceiveSettings({ context, payload }) {
+      // Update interval when settings change
+      const interval = (payload.settings as any)?.interval || 15;
+
+      if (interval !== currentInterval && intervalId) {
+        currentInterval = interval;
+        // Restart interval with new timing
+        plugin.Unterval(intervalId);
+        plugin.Interval(intervalId, interval * 1000, fetchGoldPrice);
+        fetchGoldPrice(); // Fetch immediately with new interval
       }
     }
   });

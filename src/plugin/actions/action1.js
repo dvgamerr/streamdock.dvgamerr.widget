@@ -30,11 +30,8 @@ export default function (name) {
     if (ctx) {
       // Format price with commas
       const formattedPrice = typeof price === 'number' ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : price;
-      // Background with gradient
-      const gradient = ctx.createLinearGradient(0, 0, 0, 144);
-      gradient.addColorStop(0, '#1a1a1a');
-      gradient.addColorStop(1, '#2a2a2a');
-      ctx.fillStyle = gradient;
+      // Background with solid color
+      ctx.fillStyle = '#000000ff';
       ctx.fillRect(0, 0, 144, 144);
       // Gold price text
       ctx.fillStyle = '#FFD700';

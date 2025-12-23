@@ -52,7 +52,8 @@ const Actions = [
     States: [
       {
         FontSize: '10',
-        TitleAlignment: 'bottom'
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
       }
     ],
     Settings: {},

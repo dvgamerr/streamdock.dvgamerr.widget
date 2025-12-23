@@ -5,6 +5,12 @@
   // Event listener
   const i18n = useI18nStore();
   const property = usePropertyStore();
+  
+  // Initialize settings with default
+  if (!property.settings.interval) {
+    property.settings.interval = 15;
+  }
+  
   useWatchEvent({
     didReceiveSettings(data) {},
     sendToPropertyInspector(data) {},
@@ -13,14 +19,33 @@
 </script>
 
 <template>
-  <TabView :label="i18n['Action Settings']">
-    <div style="padding: 20px; color: #fff">
-      <h3>Gold Price Display</h3>
-      <p>This action displays the current gold price from YLG Bullion API.</p>
-      <p>The price updates automatically every 15 seconds.</p>
-      <p>Click the button to open TradingView gold chart.</p>
+
+  <div class="text-sm px-5 py-3 text-gray-300">
+    <!-- title with horizontal lines -->
+    <div class="flex items-center gap-4">
+      <div class="h-px flex-1 bg-gray-400/70"></div>
+      <div class="text-xs font-medium tracking-wide text-gray-400">
+        {{i18n['Action Settings']}}
+      </div>
+      <div class="h-px flex-1 bg-gray-400/70"></div>
     </div>
-  </TabView>
+    <div class="mt-4 grid grid-cols-[auto_1fr_auto_1fr] items-center gap-3">
+      <label class="text-sm font-bold text-gray-400">Interval:</label>
+
+      <div>
+        <select 
+          v-model="property.settings.interval"
+          @change="property.saveSettings()"
+          class="w-full px-3 py-2.5 bg-[#2d2d2d] border border-[#404040] rounded cursor-pointer outline-none focus:border-[#505050] transition-colors"
+        >
+          <option :value="3">3 seconds</option>
+          <option :value="6">6 seconds</option>
+          <option :value="9">9 seconds</option>
+          <option :value="15">15 seconds</option>
+        </select>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped></style>

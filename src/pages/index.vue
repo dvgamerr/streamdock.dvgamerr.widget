@@ -1,5 +1,7 @@
 <!-- Do not modify this file -->
 <script setup lang="ts">
+
+  console.log(window.argv)
   import { NConfigProvider, darkTheme, GlobalThemeOverrides } from 'naive-ui';
   const PropertyInspector = defineAsyncComponent(() => import(`@/pages/actions/${window.argv[4].action.split('.').pop()}.vue`));
 
