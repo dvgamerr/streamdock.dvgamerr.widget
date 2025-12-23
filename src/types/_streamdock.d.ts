@@ -1,20 +1,21 @@
 /// <reference types="vite/client" />
 
+// Entry parameters
 interface Window {
-  argv: StreamDock.Argv; // 入口参数
-  connectSDSocket(): void; // 入口函数
-  connectMiraBoxSDSocket(): void; // 入口函数
-  connectSocket(): void; //兼容Elgato接口
-  connectElgatoStreamDeckSocket(): void; //兼容Elgato接口
-  onFilePickerReturn(files: string): void; // 文件上传触发 => 用于获取绝对路径
+  argv: StreamDock.Argv; // Entry parameters
+  connectSDSocket(): void; // Entry function
+  connectMiraBoxSDSocket(): void; // Entry function
+  connectSocket(): void; // Compatible with Elgato interface
+  connectElgatoStreamDeckSocket(): void; // Compatible with Elgato interface
+  onFilePickerReturn(files: string): void; // File upload trigger => Used to get absolute path
 }
 
-// 标题参数
+// Title parameters
 type titleParameters = EventPayload.titleParametersDidChange['payload']['titleParameters'];
 
-// 事件负载
+// Event payload
 declare namespace EventPayload {
-  // 操作持久化数据
+  // Operate persistent data
   type didReceiveSettings = {
     action: string;
     event: string;
@@ -66,10 +67,8 @@ declare namespace EventPayload {
     context: string;
   };
   type keyUpCord = {
-    // action: string;
     event: string;
     device: string;
-    // context: string;
     payload: {
       coordinates: {
         x: number;
@@ -90,7 +89,7 @@ declare namespace EventPayload {
       loginImageUrl: string;
     };
   };
-  // 按下|抬起|触摸
+  // Key down | Key up | Touch
   type keyDownUpTouchTap = {
     action: string;
     event: string;
@@ -107,7 +106,7 @@ declare namespace EventPayload {
       isInMultiAction: boolean;
     };
   };
-  // 创建|注销 操作
+  // Create | Unregister operation
   type willAppearDisappear = {
     action: string;
     event: string;
@@ -123,7 +122,7 @@ declare namespace EventPayload {
       isInMultiAction: boolean;
     };
   };
-  // 修改标题参数
+  // Modify title parameters
   type titleParametersDidChange = {
     action: string;
     event: string;
@@ -148,7 +147,7 @@ declare namespace EventPayload {
       };
     };
   };
-  // 连接|断开 设备
+  // Connect | Disconnect device
   type deviceDidConnectDisconnect = {
     event: string;
     device: string;
@@ -161,28 +160,28 @@ declare namespace EventPayload {
       };
     };
   };
-  // 显示|注销 属性检查器
+  // Show | Unregister property inspector
   type propertyInspectorDidAppearDisappear = {
     action: string;
     event: string;
     context: string;
     device: string;
   };
-  // 接收属性检查器消息
+  // Receive property inspector message
   type sendToPlugin = {
     event: string;
     action: string;
     context: string;
     payload: { [k: string]: any };
   };
-  // 接收插件消息
+  // Receive plugin message
   type sendToPropertyInspector = {
     action: string;
     event: string;
     context: string;
     payload: { [k: string]: any };
   };
-  //旋钮按下抬起
+  // Knob press and release
   type KnobUPDown = {
     action: string;
     event: string;
@@ -200,7 +199,7 @@ declare namespace EventPayload {
       state: number;
     };
   };
-  //旋钮旋转
+  // Knob rotation
   type dialRotate = {
     action: string;
     event: string;
@@ -218,9 +217,9 @@ declare namespace EventPayload {
   };
 }
 
-// 软件相关
+// Software related
 declare namespace StreamDock {
-  // 入口参数
+  // Entry parameters
   type Argv = [
     string,
     string,
@@ -254,22 +253,23 @@ declare namespace StreamDock {
     }
   ];
 
-  // 消息通信
+  // Message communication
   type Message = {
     event: string;
     action?: string;
+    device?: string;
     context?: string;
     payload?: unknown;
   };
 
-  // 属性检查器事件
+  // Property inspector events
   type ProperMessage = {
     didReceiveSettings?(this: ProperMessage, data: EventPayload.didReceiveSettings): void;
     didReceiveGlobalSettings?(this: ProperMessage, data: EventPayload.didReceiveGlobalSettings): void;
     sendToPropertyInspector?(this: ProperMessage, data: EventPayload.sendToPropertyInspector): void;
   };
 
-  // 操作触发事件
+  // Action trigger events
   type ActionMessage = {
     ActionID?: string;
     didReceiveSettings?(this: ActionMessage, data: EventPayload.didReceiveSettings): void;
@@ -289,11 +289,9 @@ declare namespace StreamDock {
     unRegistrationScreenSaverEvent?(this: PluginMessage, data: EventPayload.unRegistrationScreenSaverEvent): void;
   };
 
-  // 插件触发事件
+  // Plugin trigger events
   type PluginMessage = {
-    // 设备连接 TODO: 参数未知
     deviceDidConnect?(this: PluginMessage, data: EventPayload.deviceDidConnectDisconnect): void;
-    // 设备断开 TODO: 参数未知
     deviceDidDisconnect?(this: PluginMessage, data: EventPayload.deviceDidConnectDisconnect): void;
     didReceiveGlobalSettings?(this: PluginMessage, data: EventPayload.didReceiveGlobalSettings): void;
     applicationDidLaunch?(this: PluginMessage, data: EventPayload.applicationDidLaunch): void;

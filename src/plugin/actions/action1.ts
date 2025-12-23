@@ -1,4 +1,4 @@
-import { usePluginStore, useWatchEvent } from '@/hooks/plugin';
+import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
 
 export default function (name: string) {
   const ActionID = `${window.argv[3].plugin.uuid}.${name}`;
