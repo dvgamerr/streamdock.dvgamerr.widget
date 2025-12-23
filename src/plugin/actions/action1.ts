@@ -7,6 +7,8 @@ export default function (name: string) {
   const plugin = usePluginStore();
   let intervalId: string | null = null;
   let currentInterval: number = 15;
+  let lastGoldPrice: number = 0;
+  let lastExchangeRate: number = 1;
 
   // Fetch gold price from YLG Bullion API
   const fetchGoldPrice = async () => {
@@ -14,11 +16,18 @@ export default function (name: string) {
       const response = await fetch('https://register.ylgbullion.co.th/api/price/gold');
       const data = await response.json();
       const goldPrice = data.spot?.tin || 'N/A';
+      const exchangeRate = parseFloat(data.exchange_sale || 1);
+
+      // Store last values
+      lastGoldPrice = goldPrice;
+      lastExchangeRate = exchangeRate;
 
       // Update all actions with the gold price
       const actions = plugin.getActions(ActionID);
-      actions.forEach((action) => {
-        updateCanvas(action.context, goldPrice);
+      actions.forEach((actionItem) => {
+        const actionData = plugin.getAction(actionItem.context);
+        const currency = (actionData?.settings as any)?.currency || 'USD';
+        updateCanvas(actionItem.context, goldPrice, exchangeRate, currency);
       });
     } catch (error) {
       console.error('Failed to fetch gold price:', error);
@@ -26,7 +35,7 @@ export default function (name: string) {
   };
 
   // Update canvas with gold price
-  const updateCanvas = (context: string, price: string | number) => {
+  const updateCanvas = (context: string, price: number, exchangeRate: number, currency: string) => {
     const action = plugin.getAction(context);
     if (!action) return;
 
@@ -36,14 +45,14 @@ export default function (name: string) {
     const ctx = canvas.getContext('2d');
 
     if (ctx) {
+      // Calculate price based on currency
+      const finalPrice = currency === 'USD' ? price : price * exchangeRate;
+
       // Format price with commas
-      const formattedPrice = typeof price === 'number' ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : price;
+      const formattedPrice = finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       // Background with gradient
-      const gradient = ctx.createLinearGradient(0, 0, 0, 144);
-      gradient.addColorStop(0, '#1a1a1a');
-      gradient.addColorStop(1, '#2a2a2a');
-      ctx.fillStyle = gradient;
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, 144, 144);
 
       // Gold price text
@@ -56,13 +65,13 @@ export default function (name: string) {
       ctx.fillText('GOLD', 72, 40);
 
       // Draw price (larger and formatted)
-      ctx.font = 'bold 32px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = `bold ${currency === 'USD' ? '32px' : '24px'} "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif`;
       ctx.fillText(formattedPrice, 72, 80);
 
-      // Draw USD label
+      // Draw currency label
       ctx.font = '16px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.fillStyle = '#AAAAAA';
-      ctx.fillText('USD', 72, 115);
+      ctx.fillText(currency, 72, 115);
 
       action.setImage(canvas.toDataURL('image/png'));
     }
@@ -122,6 +131,7 @@ export default function (name: string) {
     didReceiveSettings({ context, payload }) {
       // Update interval when settings change
       const interval = (payload.settings as any)?.interval || 15;
+      const currency = (payload.settings as any)?.currency || 'USD';
 
       if (interval !== currentInterval && intervalId) {
         currentInterval = interval;
@@ -129,6 +139,14 @@ export default function (name: string) {
         plugin.Unterval(intervalId);
         plugin.Interval(intervalId, interval * 1000, fetchGoldPrice);
         fetchGoldPrice(); // Fetch immediately with new interval
+      } else {
+        // Currency changed, update display immediately with last known values
+        if (lastGoldPrice > 0) {
+          updateCanvas(context, lastGoldPrice, lastExchangeRate, currency);
+        } else {
+          // If no data yet, fetch new data
+          fetchGoldPrice();
+        }
       }
     }
   });

@@ -10,6 +10,9 @@
   if (!property.settings.interval) {
     property.settings.interval = 15;
   }
+  if (!property.settings.currency) {
+    property.settings.currency = 'USD';
+  }
   
   useWatchEvent({
     didReceiveSettings(data) {},
@@ -42,6 +45,19 @@
           <option :value="6">6 seconds</option>
           <option :value="9">9 seconds</option>
           <option :value="15">15 seconds</option>
+        </select>
+      </div>
+
+      <label class="text-sm font-bold text-gray-400">Currency:</label>
+
+      <div>
+        <select 
+          v-model="property.settings.currency"
+          @change="property.saveSettings()"
+          class="w-full px-3 py-2.5 bg-[#2d2d2d] border border-[#404040] rounded cursor-pointer outline-none focus:border-[#505050] transition-colors"
+        >
+          <option value="USD">USD</option>
+          <option value="THB">THB</option>
         </select>
       </div>
     </div>
