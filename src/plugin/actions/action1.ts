@@ -25,7 +25,7 @@ export default function (name: string) {
   };
 
   // Update canvas with gold price
-  const updateCanvas = (context: string, price: string) => {
+  const updateCanvas = (context: string, price: string | number) => {
     const action = plugin.getAction(context);
     if (!action) return;
 
@@ -35,27 +35,34 @@ export default function (name: string) {
     const ctx = canvas.getContext('2d');
     
     if (ctx) {
-      // Background
-      ctx.fillStyle = '#1a1a1a';
+      // Format price with commas
+      const formattedPrice = typeof price === 'number' 
+        ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : price;
+      
+      // Background with gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, 144);
+      gradient.addColorStop(0, '#1a1a1a');
+      gradient.addColorStop(1, '#2a2a2a');
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 144, 144);
       
       // Gold price text
       ctx.fillStyle = '#FFD700';
-      ctx.font = 'bold 24px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
       // Draw "GOLD" label
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('GOLD', 72, 45);
+      ctx.font = 'bold 22px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText('GOLD', 72, 40);
       
-      // Draw price
-      ctx.font = 'bold 26px Arial';
-      ctx.fillText(price.toString(), 72, 85);
+      // Draw price (larger and formatted)
+      ctx.font = 'bold 32px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(formattedPrice, 72, 80);
       
       // Draw USD label
-      ctx.font = '14px Arial';
-      ctx.fillStyle = '#CCCCCC';
+      ctx.font = '16px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#AAAAAA';
       ctx.fillText('USD', 72, 115);
       
       action.setImage(canvas.toDataURL('image/png'));
