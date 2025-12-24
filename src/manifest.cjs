@@ -86,6 +86,32 @@ const Actions = [
     UserTitleEnabled: false,
     SupportedInMultiActions: false,
     Controllers: ['Keypad', 'Information']
+  },
+  {
+    UUID: 'stock-price',
+    Icon: 'images/default.png',
+    i18n: {
+      en: {
+        Name: 'Stock Price',
+        Tooltip: 'Display stock prices from Yahoo Finance with profit/loss tracking'
+      },
+      zh_CN: {
+        Name: '股票价格',
+        Tooltip: '显示来自 Yahoo Finance 的股票价格及盈亏追踪'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
   }
 ];
 
