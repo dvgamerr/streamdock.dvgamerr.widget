@@ -10,8 +10,21 @@ export default function (name: string) {
   let lastGoldPrice: number = 0;
   let lastExchangeRate: number = 1;
 
+  // Get settings with defaults
+  const getSettings = (context: string) => {
+    const action = plugin.getAction(context);
+    const settings = (action?.settings as any) || {};
+    return {
+      currency: settings.currency || 'USD',
+      interval: settings.interval || 15
+    };
+  };
+
   // Fetch gold price from YLG Bullion API
   const fetchGoldPrice = async () => {
+    // Update all actions with loading state
+    const actions = plugin.getActions(ActionID);
+
     try {
       const response = await fetch('https://register.ylgbullion.co.th/api/price/gold');
       const data = await response.json();
@@ -23,19 +36,22 @@ export default function (name: string) {
       lastExchangeRate = exchangeRate;
 
       // Update all actions with the gold price
-      const actions = plugin.getActions(ActionID);
       actions.forEach((actionItem) => {
-        const actionData = plugin.getAction(actionItem.context);
-        const currency = (actionData?.settings as any)?.currency || 'USD';
+        const { currency } = getSettings(actionItem.context);
         updateCanvas(actionItem.context, goldPrice, exchangeRate, currency);
       });
     } catch (error) {
       console.error('Failed to fetch gold price:', error);
+      // Update all actions with error state
+      actions.forEach((actionItem) => {
+        const { currency } = getSettings(actionItem.context);
+        updateCanvas(actionItem.context, 0, 1, currency, 'error');
+      });
     }
   };
 
   // Update canvas with gold price
-  const updateCanvas = (context: string, price: number, exchangeRate: number, currency: string) => {
+  const updateCanvas = (context: string, price: number, exchangeRate: number, currency: string, status?: string) => {
     const action = plugin.getAction(context);
     if (!action) return;
 
@@ -44,37 +60,54 @@ export default function (name: string) {
     canvas.height = 144;
     const ctx = canvas.getContext('2d');
 
-    if (ctx) {
+    if (!ctx) return;
+
+    // Black background
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 144, 144);
+
+    if (status === 'error') {
+      ctx.fillStyle = '#EF4444';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 24px "Segoe UI", sans-serif';
+      ctx.fillText('Error', 72, 60);
+      ctx.font = 'bold 16px "Segoe UI", sans-serif';
+      ctx.fillStyle = '#CCCCCC';
+      ctx.fillText('Check Connection', 72, 88);
+    } else {
       // Calculate price based on currency
       const finalPrice = currency === 'USD' ? price : price * exchangeRate;
 
       // Format price with commas
       const formattedPrice = finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-      // Background with gradient
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, 144, 144);
-
-      // Gold price text
-      ctx.fillStyle = '#FFD700';
+      // Title: GOLD with currency
+      ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.fillText(`GOLD (${currency})`, 72, 28);
 
-      // Draw "GOLD" label
-      ctx.font = 'bold 22px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillText('GOLD', 72, 40);
+      // Divider line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(20, 40);
+      ctx.lineTo(124, 40);
+      ctx.stroke();
 
-      // Draw price (larger and formatted)
-      ctx.font = `bold ${currency === 'USD' ? '32px' : '24px'} "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif`;
-      ctx.fillText(formattedPrice, 72, 80);
+      // Price
+      ctx.fillStyle = '#FFD700';
+      ctx.font = `bold ${currency === 'USD' ? '32px' : '24px'} "Segoe UI", sans-serif`;
+      ctx.fillText(formattedPrice, 72, 78);
 
-      // Draw currency label
-      ctx.font = '16px "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif';
+      // Currency label
       ctx.fillStyle = '#AAAAAA';
-      ctx.fillText(currency, 72, 115);
-
-      action.setImage(canvas.toDataURL('image/png'));
+      ctx.font = 'bold 16px "Segoe UI", sans-serif';
+      ctx.fillText('Spot Tin', 72, 110);
     }
+
+    action.setImage(canvas.toDataURL('image/png'));
   };
 
   plugin.eventEmitter.subscribe('stopBackground', (data) => {
@@ -99,7 +132,7 @@ export default function (name: string) {
     ActionID,
     willAppear({ context, payload }) {
       // Get interval from settings (default 15 seconds)
-      const interval = (payload.settings as any)?.interval || 15;
+      const { interval } = getSettings(context);
       currentInterval = interval;
 
       // Start fetching gold price with configured interval
@@ -126,8 +159,7 @@ export default function (name: string) {
     },
     didReceiveSettings({ context, payload }) {
       // Update interval when settings change
-      const interval = (payload.settings as any)?.interval || 15;
-      const currency = (payload.settings as any)?.currency || 'USD';
+      const { interval, currency } = getSettings(context);
 
       if (interval !== currentInterval && intervalId) {
         currentInterval = interval;
@@ -136,13 +168,8 @@ export default function (name: string) {
         plugin.Interval(intervalId, interval * 1000, fetchGoldPrice);
         fetchGoldPrice(); // Fetch immediately with new interval
       } else {
-        // Currency changed, update display immediately with last known values
-        if (lastGoldPrice > 0) {
-          updateCanvas(context, lastGoldPrice, lastExchangeRate, currency);
-        } else {
-          // If no data yet, fetch new data
           fetchGoldPrice();
-        }
+          updateCanvas(context, lastGoldPrice, lastExchangeRate, currency);
       }
     }
   });

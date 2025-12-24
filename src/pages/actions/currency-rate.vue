@@ -8,35 +8,35 @@
 
   // Currency options
   const currencies = [
-    { code: 'USD', name: 'US Dollar' },
-    { code: 'EUR', name: 'Euro' },
-    { code: 'GBP', name: 'British Pound' },
-    { code: 'JPY', name: 'Japanese Yen' },
-    { code: 'CNY', name: 'Chinese Yuan' },
-    { code: 'THB', name: 'Thai Baht' },
-    { code: 'SGD', name: 'Singapore Dollar' },
-    { code: 'HKD', name: 'Hong Kong Dollar' },
+    { code: 'AED', name: 'UAE Dirham' },
     { code: 'AUD', name: 'Australian Dollar' },
+    { code: 'BRL', name: 'Brazilian Real' },
     { code: 'CAD', name: 'Canadian Dollar' },
     { code: 'CHF', name: 'Swiss Franc' },
-    { code: 'KRW', name: 'South Korean Won' },
-    { code: 'INR', name: 'Indian Rupee' },
-    { code: 'MYR', name: 'Malaysian Ringgit' },
-    { code: 'PHP', name: 'Philippine Peso' },
-    { code: 'IDR', name: 'Indonesian Rupiah' },
-    { code: 'VND', name: 'Vietnamese Dong' },
-    { code: 'NZD', name: 'New Zealand Dollar' },
-    { code: 'SEK', name: 'Swedish Krona' },
-    { code: 'NOK', name: 'Norwegian Krone' },
+    { code: 'CNY', name: 'Chinese Yuan' },
     { code: 'DKK', name: 'Danish Krone' },
-    { code: 'PLN', name: 'Polish Złoty' },
-    { code: 'TRY', name: 'Turkish Lira' },
-    { code: 'RUB', name: 'Russian Ruble' },
-    { code: 'BRL', name: 'Brazilian Real' },
+    { code: 'EUR', name: 'Euro' },
+    { code: 'GBP', name: 'British Pound' },
+    { code: 'HKD', name: 'Hong Kong Dollar' },
+    { code: 'IDR', name: 'Indonesian Rupiah' },
+    { code: 'INR', name: 'Indian Rupee' },
+    { code: 'JPY', name: 'Japanese Yen' },
+    { code: 'KRW', name: 'South Korean Won' },
     { code: 'MXN', name: 'Mexican Peso' },
-    { code: 'ZAR', name: 'South African Rand' },
-    { code: 'AED', name: 'UAE Dirham' },
-    { code: 'SAR', name: 'Saudi Riyal' }
+    { code: 'MYR', name: 'Malaysian Ringgit' },
+    { code: 'NOK', name: 'Norwegian Krone' },
+    { code: 'NZD', name: 'New Zealand Dollar' },
+    { code: 'PHP', name: 'Philippine Peso' },
+    { code: 'PLN', name: 'Polish Złoty' },
+    { code: 'RUB', name: 'Russian Ruble' },
+    { code: 'SAR', name: 'Saudi Riyal' },
+    { code: 'SEK', name: 'Swedish Krona' },
+    { code: 'SGD', name: 'Singapore Dollar' },
+    { code: 'THB', name: 'Thai Baht' },
+    { code: 'TRY', name: 'Turkish Lira' },
+    { code: 'USD', name: 'US Dollar' },
+    { code: 'VND', name: 'Vietnamese Dong' },
+    { code: 'ZAR', name: 'South African Rand' }
   ];
 
   // Initialize settings with defaults
@@ -50,6 +50,14 @@
     property.settings.interval = 10000;
   }
 
+  // Swap currencies
+  const swapCurrencies = () => {
+    const temp = property.settings.from;
+    property.settings.from = property.settings.to;
+    property.settings.to = temp;
+    property.saveSettings();
+  };
+
   useWatchEvent({
     didReceiveSettings(data) {},
     sendToPropertyInspector(data) {},
@@ -58,73 +66,126 @@
 </script>
 
 <template>
-  <div class="text-sm px-5 py-3 text-gray-300">
+  <div class="text-md px-5 py-3 text-gray-300">
     <!-- title with horizontal lines -->
     <div class="flex items-center gap-4">
-      <div class="h-px flex-1 bg-gray-400/70"></div>
-      <div class="text-xs font-medium tracking-wide text-gray-400">
-        {{ i18n['Currency Rate Settings'] || 'Currency Rate Settings' }}
+      <div class="h-px flex-1 bg-gray-700/70"></div>
+      <div class="text-md font-medium tracking-wide text-gray-400">
+        exchange rate conversion
       </div>
-      <div class="h-px flex-1 bg-gray-400/70"></div>
+      <div class="h-px flex-1 bg-gray-700/70"></div>
     </div>
 
-    <div class="mt-4 space-y-3">
-      <!-- From Currency -->
-      <div class="grid grid-cols-[100px_1fr] items-center gap-3">
-        <label class="text-sm font-bold text-gray-400">From:</label>
-        <div>
-          <select
-            v-model="property.settings.from"
-            @change="property.saveSettings()"
-            class="w-full px-3 py-2.5 bg-[#2d2d2d] border border-[#404040] rounded cursor-pointer outline-none focus:border-[#505050] transition-colors"
-          >
-            <option v-for="currency in currencies" :key="currency.code" :value="currency.code">{{ currency.code }} - {{ currency.name }}</option>
-          </select>
-        </div>
+    <!-- row: selects + swap -->
+    <div class="mt-4 grid grid-cols-[auto_1fr_auto_1fr] items-center gap-3">
+      <label class="text-md text-gray-300">Select currency:</label>
+
+      <div class="relative">
+        <select
+          v-model="property.settings.from"
+          @change="property.saveSettings()"
+          class="w-full appearance-none rounded-md border border-gray-700/70 bg-[#2a2c30] px-3 py-2 pr-10 text-md text-gray-100 outline-none ring-0 transition focus:border-gray-500"
+        >
+          <option v-for="currency in currencies" :key="currency.code" :value="currency.code">
+            {{ currency.code }} - {{ currency.name }}
+          </option>
+        </select>
+        <svg
+          class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+            clip-rule="evenodd"
+          />
+        </svg>
       </div>
 
-      <!-- To Currency -->
-      <div class="grid grid-cols-[100px_1fr] items-center gap-3">
-        <label class="text-sm font-bold text-gray-400">To:</label>
-        <div>
-          <select
-            v-model="property.settings.to"
-            @change="property.saveSettings()"
-            class="w-full px-3 py-2.5 bg-[#2d2d2d] border border-[#404040] rounded cursor-pointer outline-none focus:border-[#505050] transition-colors"
-          >
-            <option v-for="currency in currencies" :key="currency.code" :value="currency.code">{{ currency.code }} - {{ currency.name }}</option>
-          </select>
-        </div>
-      </div>
+      <button
+        type="button"
+        @click="swapCurrencies"
+        class="grid h-10 w-10 place-items-center rounded-md border border-transparent text-gray-400 hover:text-gray-200 transition-colors"
+        aria-label="Swap currencies"
+        title="Swap"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M16 3l4 4-4 4" />
+          <path d="M20 7H9" />
+          <path d="M8 21l-4-4 4-4" />
+          <path d="M4 17h11" />
+        </svg>
+      </button>
 
-      <!-- Refresh Interval -->
-      <div class="grid grid-cols-[100px_1fr] items-center gap-3">
-        <label class="text-sm font-bold text-gray-400">Refresh:</label>
-        <div>
-          <select
-            v-model.number="property.settings.interval"
-            @change="property.saveSettings()"
-            class="w-full px-3 py-2.5 bg-[#2d2d2d] border border-[#404040] rounded cursor-pointer outline-none focus:border-[#505050] transition-colors"
-          >
-            <option :value="5000">5 seconds</option>
-            <option :value="10000">10 seconds</option>
-            <option :value="15000">15 seconds</option>
-            <option :value="30000">30 seconds</option>
-            <option :value="60000">1 minute</option>
-            <option :value="300000">5 minutes</option>
-          </select>
-        </div>
+      <div class="relative">
+        <select
+          v-model="property.settings.to"
+          @change="property.saveSettings()"
+          class="w-full appearance-none rounded-md border border-gray-700/70 bg-[#2a2c30] px-3 py-2 pr-10 text-md text-gray-100 outline-none ring-0 transition focus:border-gray-500"
+        >
+          <option v-for="currency in currencies" :key="currency.code" :value="currency.code">
+            {{ currency.code }} - {{ currency.name }}
+          </option>
+        </select>
+        <svg
+          class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+            clip-rule="evenodd"
+          />
+        </svg>
       </div>
     </div>
 
-    <!-- Info Section -->
-    <div class="mt-6 p-3 bg-[#2d2d2d] border border-[#404040] rounded">
-      <div class="text-xs text-gray-400 space-y-1">
-        <div class="font-bold text-gray-300">Currency Pair:</div>
-        <div class="font-mono text-[#FFD700]">{{ property.settings.from || 'USD' }}/{{ property.settings.to || 'THB' }}</div>
-        <div class="mt-2 text-gray-500 text-[10px]">Data source: Yahoo Finance</div>
+    <!-- Refresh Interval -->
+    <div class="mt-4 grid grid-cols-[auto_1fr] items-center gap-3">
+      <label class="text-md text-gray-300">Refresh interval:</label>
+      <div class="relative">
+        <select
+          v-model.number="property.settings.interval"
+          @change="property.saveSettings()"
+          class="w-full appearance-none rounded-md border border-gray-700/70 bg-[#2a2c30] px-3 py-2 pr-10 text-md text-gray-100 outline-none ring-0 transition focus:border-gray-500"
+        >
+          <option :value="5000">5 seconds</option>
+          <option :value="10000">10 seconds</option>
+          <option :value="15000">15 seconds</option>
+          <option :value="30000">30 seconds</option>
+          <option :value="60000">1 minute</option>
+          <option :value="300000">5 minutes</option>
+        </select>
+        <svg
+          class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+            clip-rule="evenodd"
+          />
+        </svg>
       </div>
     </div>
+
+    <!-- bottom divider -->
+    <div class="mt-3 h-px w-full bg-gray-700/40"></div>
   </div>
 </template>
 
