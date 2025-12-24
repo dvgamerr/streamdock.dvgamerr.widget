@@ -36,7 +36,7 @@ const Plugin = {
 // Actions array
 const Actions = [
   {
-    UUID: 'action1',
+    UUID: 'gold-price',
     Icon: 'images/ylg.png',
     i18n: {
       en: {
@@ -46,6 +46,32 @@ const Actions = [
       zh_CN: {
         Name: '黄金价格',
         Tooltip: '显示 YLG Bullion 的实时金价'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
+  },
+  {
+    UUID: 'currency-rate',
+    Icon: 'images/default.png',
+    i18n: {
+      en: {
+        Name: 'Currency Rate',
+        Tooltip: 'Display currency exchange rates from Yahoo Finance'
+      },
+      zh_CN: {
+        Name: '汇率',
+        Tooltip: '显示来自 Yahoo Finance 的货币汇率'
       }
     },
     state: 0,
