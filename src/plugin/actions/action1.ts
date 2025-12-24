@@ -98,8 +98,6 @@ export default function (name: string) {
   useWatchEvent('action', {
     ActionID,
     willAppear({ context, payload }) {
-      console.log('Action created:', context);
-
       // Get interval from settings (default 15 seconds)
       const interval = (payload.settings as any)?.interval || 15;
       currentInterval = interval;
@@ -112,8 +110,6 @@ export default function (name: string) {
       }
     },
     willDisappear({ context }) {
-      console.log('Action removed:', context);
-
       // Stop interval if no more actions
       const actions = plugin.getActions(ActionID);
       if (actions.length === 0 && intervalId) {
