@@ -125,7 +125,8 @@ export default function (name: string) {
       return;
     }
 
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1mo&range=1mo`;
+    const encodedSymbol = encodeURIComponent(symbol.toUpperCase());
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodedSymbol}?interval=1mo&range=1mo`;
 
     GET(context, url, (e) => {
       try {

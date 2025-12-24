@@ -63,7 +63,7 @@ const Actions = [
   },
   {
     UUID: 'currency-rate',
-    Icon: 'images/default.png',
+    Icon: 'images/yahoo.png',
     i18n: {
       en: {
         Name: 'Currency Rate',
@@ -89,7 +89,7 @@ const Actions = [
   },
   {
     UUID: 'stock-price',
-    Icon: 'images/default.png',
+    Icon: 'images/yahoo.png',
     i18n: {
       en: {
         Name: 'Stock Price',
