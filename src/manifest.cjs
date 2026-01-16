@@ -112,6 +112,32 @@ const Actions = [
     UserTitleEnabled: false,
     SupportedInMultiActions: false,
     Controllers: ['Keypad', 'Information']
+  },
+  {
+    UUID: 'air-quality',
+    Icon: 'images/air-quality.png',
+    i18n: {
+      en: {
+        Name: 'Air Quality',
+        Tooltip: 'Monitor PM 2.5 and PM 10 levels from Open-Meteo API'
+      },
+      zh_CN: {
+        Name: '空气质量',
+        Tooltip: '监测 PM 2.5 和 PM 10 数值'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
   }
 ];
 
