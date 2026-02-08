@@ -119,11 +119,11 @@ const Actions = [
     i18n: {
       en: {
         Name: 'Air Quality',
-        Tooltip: 'Monitor PM 2.5 and PM 10 levels from Open-Meteo API'
+        Tooltip: 'Monitor US AQI from IQAir location page'
       },
       zh_CN: {
         Name: '空气质量',
-        Tooltip: '监测 PM 2.5 和 PM 10 数值'
+        Tooltip: '从 IQAir 页面监测 US AQI 数值'
       }
     },
     state: 0,
