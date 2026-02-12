@@ -1,4 +1,5 @@
 import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
+import { watch } from 'vue';
 
 export default function (name: string) {
   const ActionID = `${window.argv[3].plugin.uuid}.${name}`;
@@ -7,16 +8,7 @@ export default function (name: string) {
   const plugin = usePluginStore();
   const record: Record<string, any> = {};
 
-  // Helper function to make GET requests
-  const GET = (context: string, url: string, callback: (data: any) => void) => {
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => callback(data))
-      .catch((error) => {
-        console.error('Fetch error:', error);
-        canvasFunc(context, 'error');
-      });
-  };
+  const timerKey = (context: string) => `currency-${context}`;
 
   // Canvas rendering function
   const canvasFunc = (context: string, status?: string) => {
@@ -86,56 +78,66 @@ export default function (name: string) {
 
   // Fetch currency data from Yahoo Finance
   const fetchCurrencyRate = (context: string, from: string, to: string, isActive: boolean = true) => {
+    if (!record[context]) return;
+
     isActive && canvasFunc(context, 'loading');
-    clearTimeout(record[context]?.timer);
+    plugin.Untimeout(timerKey(context));
 
     const pair = `${from || 'USD'}${to || 'THB'}=X`;
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${pair}?interval=1d&range=1d`;
 
-    GET(context, url, (e) => {
-      try {
-        if (e.chart && e.chart.result?.[0]) {
-          const result = e.chart.result[0];
-          const meta = result.meta;
-          const quote = result.indicators?.quote?.[0];
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        try {
+          if (data.chart && data.chart.result?.[0]) {
+            const result = data.chart.result[0];
+            const meta = result.meta;
+            const quote = result.indicators?.quote?.[0];
 
-          // Extract rate data
-          let currentPrice = meta.regularMarketPrice;
-          if (!currentPrice && quote?.close) {
-            currentPrice = quote.close[quote.close.length - 1];
-          }
+            // Extract rate data
+            let currentPrice = meta.regularMarketPrice;
+            if (!currentPrice && quote?.close) {
+              currentPrice = quote.close[quote.close.length - 1];
+            }
 
-          if (!currentPrice || isNaN(currentPrice)) {
+            if (!currentPrice || isNaN(currentPrice)) {
+              canvasFunc(context, 'error');
+              return;
+            }
+
+            const previousClose = meta.previousClose || meta.chartPreviousClose || currentPrice;
+            const change = currentPrice - previousClose;
+            const changePercent = previousClose > 0 ? ((change / previousClose) * 100).toFixed(2) : '0.00';
+
+            record[context].data = {
+              code: pair.replace('=X', ''),
+              price: parseFloat(currentPrice).toFixed(4),
+              ratio: `${parseFloat(changePercent) >= 0 ? '+' : ''}${changePercent}%`,
+              increase: `${change >= 0 ? '+' : ''}${change.toFixed(4)}`
+            };
+
+            canvasFunc(context);
+          } else {
             canvasFunc(context, 'error');
-            return;
           }
-
-          const previousClose = meta.previousClose || meta.chartPreviousClose || currentPrice;
-          const change = currentPrice - previousClose;
-          const changePercent = previousClose > 0 ? ((change / previousClose) * 100).toFixed(2) : '0.00';
-
-          record[context].data = {
-            code: pair.replace('=X', ''),
-            price: parseFloat(currentPrice).toFixed(4),
-            ratio: `${parseFloat(changePercent) >= 0 ? '+' : ''}${changePercent}%`,
-            increase: `${change >= 0 ? '+' : ''}${change.toFixed(4)}`
-          };
-
-          canvasFunc(context);
-        } else {
+        } catch (err) {
+          console.error('Error processing currency data:', err);
           canvasFunc(context, 'error');
         }
-      } catch (err) {
-        console.error('Error processing currency data:', err);
+      })
+      .catch((error) => {
+        console.error('Fetch error:', error);
         canvasFunc(context, 'error');
-      }
-
-      // Refresh every 10 seconds
-      const interval = record[context]?.interval || 10000;
-      record[context].timer = setTimeout(() => {
-        fetchCurrencyRate(context, from, to, false);
-      }, interval);
-    });
+      })
+      .finally(() => {
+        // Always reschedule — even after errors (via Worker, won't be throttled)
+        if (!record[context]) return;
+        const interval = record[context]?.interval || 10000;
+        plugin.Timeout(timerKey(context), interval, () => {
+          fetchCurrencyRate(context, from, to, false);
+        });
+      });
   };
 
   plugin.eventEmitter.subscribe('stopBackground', (data) => {
@@ -161,7 +163,6 @@ export default function (name: string) {
       // Initialize record for this context
       if (!record[context]) {
         record[context] = {
-          timer: null,
           data: null,
           interval: (payload?.settings as any)?.interval || 10000
         };
@@ -175,9 +176,7 @@ export default function (name: string) {
     },
     willDisappear({ context }) {
       // Clean up timer when action disappears
-      if (record[context]?.timer) {
-        clearTimeout(record[context].timer);
-      }
+      plugin.Untimeout(timerKey(context));
       delete record[context];
     },
     didReceiveSettings({ context, payload }) {

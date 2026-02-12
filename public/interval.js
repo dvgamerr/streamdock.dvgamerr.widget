@@ -1,4 +1,4 @@
-// 开辟一个新线程: 解决原生定时器延迟问题
+// Web Worker thread: solve native timer throttling in background tabs
 const TimerPond = {};
 
 const Handle = {
@@ -10,6 +10,20 @@ const Handle = {
   },
   clearInterval(data) {
     clearInterval(TimerPond[data.uuid]);
+    delete TimerPond[data.uuid];
+  },
+  setTimeout(data) {
+    if (TimerPond[data.uuid]) {
+      clearTimeout(TimerPond[data.uuid]);
+      delete TimerPond[data.uuid];
+    }
+    TimerPond[data.uuid] = setTimeout(() => {
+      self.postMessage({ uuid: data.uuid, event: 'setTimeout' });
+      delete TimerPond[data.uuid];
+    }, data.delay);
+  },
+  clearTimeout(data) {
+    clearTimeout(TimerPond[data.uuid]);
     delete TimerPond[data.uuid];
   }
 };

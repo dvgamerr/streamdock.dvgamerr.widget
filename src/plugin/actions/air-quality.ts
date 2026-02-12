@@ -10,7 +10,6 @@ type AQIData = {
 };
 
 type ActionRecord = {
-  timer: ReturnType<typeof setTimeout> | null;
   data: AQIData | null;
   interval: number;
   isActive: boolean;
@@ -22,6 +21,8 @@ export default function (name: string) {
   // Event listener
   const plugin = usePluginStore();
   const record: Record<string, ActionRecord> = {};
+
+  const timerKey = (context: string) => `aqi-${context}`;
 
   const normalizeSegment = (value: string | undefined, fallback: string) => {
     const cleaned = (value || '')
@@ -201,7 +202,7 @@ export default function (name: string) {
     if (!record[context]) return;
 
     isActive && canvasFunc(context, 'loading');
-    clearTimeout(record[context]?.timer);
+    plugin.Untimeout(timerKey(context));
 
     const sourceUrl = buildIqAirUrl(city, district);
 
@@ -249,19 +250,15 @@ export default function (name: string) {
         canvasFunc(context, 'error');
       })
       .finally(() => {
-        if (!record[context]) {
-          return;
-        }
+        // Always reschedule — even after errors (via Worker, won't be throttled)
+        if (!record[context]) return;
 
         const interval = record[context]?.interval || 3600000;
-        record[context] = {
-          ...record[context],
-          timer: setTimeout(() => {
-            if (record[context]?.isActive) {
-              fetchAirQuality(context, city, district, false);
-            }
-          }, interval)
-        };
+        plugin.Timeout(timerKey(context), interval, () => {
+          if (record[context]?.isActive) {
+            fetchAirQuality(context, city, district, false);
+          }
+        });
       });
   };
 
@@ -290,7 +287,6 @@ export default function (name: string) {
       // Initialize record for this context
       if (!record[context]) {
         record[context] = {
-          timer: null,
           data: null,
           interval: settings.interval || 3600000,
           isActive: true
@@ -306,7 +302,7 @@ export default function (name: string) {
     willDisappear({ context }) {
       if (record[context]) {
         record[context].isActive = false;
-        clearTimeout(record[context].timer);
+        plugin.Untimeout(timerKey(context));
         delete record[context];
       }
     },

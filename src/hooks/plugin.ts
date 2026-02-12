@@ -9,7 +9,14 @@ export const usePluginStore = defineStore('pluginStore', () => {
   const TimerSubscribe: { uuid: string; fn: () => void }[] = [];
   Timer.addEventListener('message', ({ data: { event, uuid } }: { data: { event: string; uuid: string } }) => {
     const subIndex = TimerSubscribe.findIndex((item) => item.uuid === uuid);
-    subIndex !== -1 && event === 'setInterval' && TimerSubscribe[subIndex].fn();
+    if (subIndex === -1) return;
+    if (event === 'setInterval' || event === 'setTimeout') {
+      TimerSubscribe[subIndex].fn();
+    }
+    // Auto-cleanup one-shot timers after they fire
+    if (event === 'setTimeout') {
+      TimerSubscribe.splice(subIndex, 1);
+    }
   });
 
   // Create timer
@@ -23,6 +30,24 @@ export const usePluginStore = defineStore('pluginStore', () => {
     const subIndex = TimerSubscribe.findIndex((item) => item.uuid === uuid);
     subIndex !== -1 && TimerSubscribe.splice(subIndex, 1);
     Timer.postMessage({ event: 'clearInterval', uuid });
+  };
+
+  // Create one-shot timer (via Worker — won't be throttled)
+  const Timeout = (uuid: string, delay: number, fn: () => void) => {
+    // Remove existing subscription if re-scheduling
+    const existingIndex = TimerSubscribe.findIndex((item) => item.uuid === uuid);
+    if (existingIndex !== -1) {
+      TimerSubscribe.splice(existingIndex, 1);
+    }
+    TimerSubscribe.push({ uuid, fn });
+    Timer.postMessage({ event: 'setTimeout', uuid, delay });
+  };
+
+  // Cancel one-shot timer
+  const Untimeout = (uuid: string) => {
+    const subIndex = TimerSubscribe.findIndex((item) => item.uuid === uuid);
+    subIndex !== -1 && TimerSubscribe.splice(subIndex, 1);
+    Timer.postMessage({ event: 'clearTimeout', uuid });
   };
 
   // Connect to software
@@ -217,6 +242,8 @@ export const usePluginStore = defineStore('pluginStore', () => {
     userInfo,
     Interval,
     Unterval,
+    Timeout,
+    Untimeout,
     setGlobalSettings,
     getGlobalSettings,
     setBackground,
