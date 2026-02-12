@@ -81,12 +81,6 @@
       </div>
     </div>
 
-    <!-- URL preview -->
-    <div class="mt-4 rounded-lg bg-purple-950/30 border border-purple-800/30 px-3 py-2">
-      <div class="text-xs text-purple-400 mb-1">IQAir URL (default):</div>
-      <code class="block text-xs text-gray-300 break-all">{{ getIqAirUrl() }}</code>
-    </div>
-
     <!-- Refresh Interval -->
     <div class="mt-4 grid grid-cols-[auto_1fr] items-center gap-3">
       <label class="text-md text-gray-300 text-right">Refresh:</label>
