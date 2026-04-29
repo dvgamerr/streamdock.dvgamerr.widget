@@ -161,7 +161,7 @@ export default function (name: string) {
               // Use Yahoo Finance's change percentage
               const previousClose = meta.previousClose || meta.chartPreviousClose || currentPrice;
               const change = currentPrice - previousClose;
-              percentChange = previousClose > 0 ? ((change / previousClose) * 100) : 0;
+              percentChange = previousClose > 0 ? (change / previousClose) * 100 : 0;
             }
 
             const settings = (plugin.getAction(context)?.settings as any) || {};

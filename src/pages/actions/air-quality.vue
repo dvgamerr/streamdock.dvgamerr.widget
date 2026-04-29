@@ -3,33 +3,13 @@
 
   // Event listener
   const property = usePropertyStore();
-  const normalizeSegment = (value: string | undefined, fallback: string) => {
-    const cleaned = (value || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[\\/]+/g, '-')
-      .replace(/[\s_]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-
-    return cleaned || fallback;
-  };
-
-  const getIqAirUrl = () => {
-    const city = normalizeSegment(property.settings.city, 'bangkok');
-    const district = normalizeSegment(property.settings.district, 'sathorn-district');
-    return `https://www.iqair.com/thailand/${city}/${city}/${district}`;
-  };
 
   // Initialize settings with defaults
+  if (!property.settings.url) {
+    property.settings.url = 'https://www.iqair.com/th-en/thailand/bangkok/nong-khaem';
+  }
   if (!property.settings.interval) {
     property.settings.interval = 3600000; // 1 hour default
-  }
-  if (!property.settings.city) {
-    property.settings.city = 'bangkok';
-  }
-  if (!property.settings.district) {
-    property.settings.district = 'sathorn-district';
   }
 
   useWatchEvent({
@@ -43,40 +23,21 @@
   <div class="text-md px-5 py-3 text-gray-300">
     <!-- title with horizontal lines -->
     <div class="flex items-center gap-4">
-      <div class="h-px flex-1 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
-      <div class="text-md font-medium tracking-wide text-purple-400 flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-        </svg>
-        air quality monitor
-      </div>
-      <div class="h-px flex-1 bg-gradient-to-l from-transparent via-purple-500/40 to-transparent"></div>
+      <div class="h-px flex-1 bg-gray-700/70"></div>
+      <div class="text-md font-medium tracking-wide text-gray-400">air quality monitor</div>
+      <div class="h-px flex-1 bg-gray-700/70"></div>
     </div>
 
-    <!-- City field -->
+    <!-- IQAir URL field -->
     <div class="mt-4 grid grid-cols-[auto_1fr] items-center gap-3">
-      <label class="text-md text-gray-300 text-right">City:</label>
+      <label class="text-md text-gray-300 text-right">IQAir URL:</label>
       <div>
         <input
-          v-model="property.settings.city"
+          v-model="property.settings.url"
           @input="property.saveSettings()"
           type="text"
-          placeholder="bangkok"
-          class="w-full rounded-lg border border-purple-700/40 bg-[#2a2c30] px-3 py-2 text-md text-gray-100 placeholder-gray-500 outline-none ring-0 transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-        />
-      </div>
-    </div>
-
-    <!-- District field -->
-    <div class="mt-4 grid grid-cols-[auto_1fr] items-center gap-3">
-      <label class="text-md text-gray-300 text-right">District:</label>
-      <div>
-        <input
-          v-model="property.settings.district"
-          @input="property.saveSettings()"
-          type="text"
-          placeholder="sathorn-district"
-          class="w-full rounded-lg border border-purple-700/40 bg-[#2a2c30] px-3 py-2 text-md text-gray-100 placeholder-gray-500 outline-none ring-0 transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+          placeholder="https://www.iqair.com/th-en/thailand/bangkok/nong-khaem"
+          class="w-full rounded-md border border-gray-700/70 bg-[#2a2c30] px-3 py-2 text-md text-gray-100 placeholder-gray-500 outline-none ring-0 transition focus:border-gray-500"
         />
       </div>
     </div>
@@ -88,7 +49,7 @@
         <select
           v-model.number="property.settings.interval"
           @change="property.saveSettings()"
-          class="w-full appearance-none rounded-lg border border-purple-700/40 bg-[#2a2c30] px-3 py-2 pr-10 text-md text-gray-100 outline-none ring-0 transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+          class="w-full appearance-none rounded-md border border-gray-700/70 bg-[#2a2c30] px-3 py-2 pr-10 text-md text-gray-100 outline-none ring-0 transition focus:border-gray-500"
         >
           <option :value="3600000">1 hour</option>
           <option :value="14400000">4 hours</option>
@@ -96,29 +57,23 @@
           <option :value="43200000">12 hours</option>
         </select>
         <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          <path
+            fill-rule="evenodd"
+            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+            clip-rule="evenodd"
+          />
         </svg>
       </div>
     </div>
+
+    <!-- Help text -->
+    <div class="mt-3 rounded-md bg-gray-800/50 px-3 py-2 text-xs text-gray-400">
+      <strong>Tip:</strong> Paste any IQAir location URL (e.g., <code>iqair.com/th-en/thailand/&lt;city&gt;/&lt;district&gt;</code>). Press the key to refresh manually.
+    </div>
+
+    <!-- bottom divider -->
+    <div class="mt-3 h-px w-full bg-gray-700/40"></div>
   </div>
 </template>
 
-<style scoped>
-  /* Custom scrollbar for better aesthetics */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #1a1c20;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #6b21a8;
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #7c3aed;
-  }
-</style>
+<style lang="scss" scoped></style>

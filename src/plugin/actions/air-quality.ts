@@ -24,22 +24,13 @@ export default function (name: string) {
 
   const timerKey = (context: string) => `aqi-${context}`;
 
-  const normalizeSegment = (value: string | undefined, fallback: string) => {
-    const cleaned = (value || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[\\/]+/g, '-')
-      .replace(/[\s_]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+  const DEFAULT_URL = 'https://www.iqair.com/th-en/thailand/bangkok/nong-khaem';
 
-    return cleaned || fallback;
-  };
-
-  const buildIqAirUrl = (city: string, district: string) => {
-    const citySegment = normalizeSegment(city, 'bangkok');
-    const districtSegment = normalizeSegment(district, 'sathorn-district');
-    return `https://www.iqair.com/thailand/${citySegment}/${citySegment}/${districtSegment}`;
+  const sanitizeUrl = (value: string | undefined) => {
+    const trimmed = (value || '').trim();
+    if (!trimmed) return DEFAULT_URL;
+    if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
+    return trimmed;
   };
 
   const getColorFromBadgeClass = (className: string) => {
@@ -198,13 +189,13 @@ export default function (name: string) {
   };
 
   // Fetch air quality data from IQAir page
-  const fetchAirQuality = (context: string, city: string, district: string, isActive: boolean = true) => {
+  const fetchAirQuality = (context: string, url: string, isActive: boolean = true) => {
     if (!record[context]) return;
 
     isActive && canvasFunc(context, 'loading');
-    plugin.Untimeout(timerKey(context));
+    plugin.Unterval(timerKey(context));
 
-    const sourceUrl = buildIqAirUrl(city, district);
+    const sourceUrl = sanitizeUrl(url);
 
     fetch(sourceUrl)
       .then((response) => {
@@ -254,9 +245,9 @@ export default function (name: string) {
         if (!record[context]) return;
 
         const interval = record[context]?.interval || 3600000;
-        plugin.Timeout(timerKey(context), interval, () => {
+        plugin.Interval(timerKey(context), interval, () => {
           if (record[context]?.isActive) {
-            fetchAirQuality(context, city, district, false);
+            fetchAirQuality(context, sourceUrl, false);
           }
         });
       });
@@ -293,45 +284,40 @@ export default function (name: string) {
         };
       }
 
-      const city = settings.city || 'bangkok';
-      const district = settings.district || 'sathorn-district';
+      const url = sanitizeUrl(settings.url);
 
-      fetchAirQuality(context, city, district, true);
+      fetchAirQuality(context, url, true);
     },
 
     willDisappear({ context }) {
       if (record[context]) {
         record[context].isActive = false;
-        plugin.Untimeout(timerKey(context));
+        plugin.Unterval(timerKey(context));
         delete record[context];
       }
     },
 
     didReceiveSettings({ context, payload }) {
       const settings = (payload?.settings as any) || {};
-      const city = settings.city || 'bangkok';
-      const district = settings.district || 'sathorn-district';
+      const url = sanitizeUrl(settings.url);
       const interval = settings.interval || 3600000;
 
       if (record[context]) {
         record[context].interval = interval;
       }
 
-      fetchAirQuality(context, city, district, true);
+      fetchAirQuality(context, url, true);
     },
 
     keyUp({ context }) {
-      // Open IQAir website with location
       const action = plugin.getAction(context);
       if (!action) return;
 
       const settings = (action.settings as any) || {};
-      const city = settings.city || 'bangkok';
-      const district = settings.district || 'sathorn-district';
-      const url = buildIqAirUrl(city, district);
+      const url = sanitizeUrl(settings.url);
 
-      // Open URL in default browser
-      action.openUrl(url);
+      // Refresh air quality data
+      fetchAirQuality(context, url, true);
     }
   });
 

@@ -168,8 +168,8 @@ export default function (name: string) {
         plugin.Interval(intervalId, interval * 1000, fetchGoldPrice);
         fetchGoldPrice(); // Fetch immediately with new interval
       } else {
-          fetchGoldPrice();
-          updateCanvas(context, lastGoldPrice, lastExchangeRate, currency);
+        fetchGoldPrice();
+        updateCanvas(context, lastGoldPrice, lastExchangeRate, currency);
       }
     }
   });

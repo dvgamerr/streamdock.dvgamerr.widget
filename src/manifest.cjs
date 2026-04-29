@@ -138,6 +138,32 @@ const Actions = [
     UserTitleEnabled: false,
     SupportedInMultiActions: false,
     Controllers: ['Keypad', 'Information']
+  },
+  {
+    UUID: 'powershell',
+    Icon: 'images/default.png',
+    i18n: {
+      en: {
+        Name: 'PowerShell',
+        Tooltip: 'Run a bundled PowerShell script on key press'
+      },
+      zh_CN: {
+        Name: 'PowerShell 脚本',
+        Tooltip: '按键运行内置的 PowerShell 脚本'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
   }
 ];
 
