@@ -1,5 +1,6 @@
 import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
 import { watch } from 'vue';
+import { CANVAS_SIZE, accentGradient, drawBackground, drawDivider, PALETTES, paletteFromHex } from '../canvas-style.js';
 
 type AQIData = {
   aqi: number;
@@ -122,67 +123,60 @@ export default function (name: string) {
     if (!action) return;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 144;
-    canvas.height = 144;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
-    // Background color based on air quality (default black)
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 144, 144);
-
     if (status === 'loading') {
-      // Loading animation with spinner
-      ctx.fillStyle = '#ffffff';
+      drawBackground(ctx, PALETTES.slate.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.slate);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.fillText('Loading…', 72, 72);
+    } else if (status === 'error') {
+      drawBackground(ctx, PALETTES.rose.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.rose);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = 'bold 22px "Segoe UI", sans-serif';
-      ctx.fillText('Loading...', 72, 72);
-
-      // Draw simple spinner
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(72, 100, 15, 0, Math.PI * 1.5);
-      ctx.stroke();
-    } else if (status === 'error') {
-      ctx.fillStyle = '#EF4444';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
-      ctx.fillText('⚠️ Error', 72, 60);
-      ctx.font = 'bold 16px "Segoe UI", sans-serif';
-      ctx.fillStyle = '#CCCCCC';
-      ctx.fillText('Fetch Failed', 72, 88);
+      ctx.fillText('Error', 72, 60);
+      ctx.font = 'bold 14px "Segoe UI", sans-serif';
+      ctx.fillText('Fetch failed', 72, 88);
     } else if (record[context]?.data) {
       const data = record[context].data;
+      const palette = paletteFromHex(data.color);
       const levelText = data.level.length > 16 ? `${data.level.slice(0, 15)}…` : data.level;
       const levelFontSize = levelText.length > 12 ? 14 : 18;
 
-      // Apply background color based on air quality with rounded corners
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.roundRect(0, 0, 144, 144, 12);
-      ctx.fill();
+      drawBackground(ctx, palette.bg);
+
+      const accent = accentGradient(ctx, palette);
 
       // US AQI Label (top)
-      ctx.fillStyle = data.color;
-      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = 'bold 16px "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('US AQI', 72, 35);
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('US AQI', 72, 32);
+
+      drawDivider(ctx, palette, 42);
 
       // US AQI Value (Large - centered)
-      ctx.fillStyle = data.color;
-      ctx.font = 'bold 68px "Segoe UI", sans-serif';
+      ctx.fillStyle = accent;
+      ctx.font = 'bold 64px "Segoe UI", sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText(data.aqi.toString(), 72, 80);
+      ctx.fillText(data.aqi.toString(), 72, 82);
 
       // AQI Level name (bottom)
-      ctx.fillStyle = data.color;
+      ctx.fillStyle = accent;
       ctx.font = `bold ${levelFontSize}px "Segoe UI", sans-serif`;
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText(levelText, 72, 135);
+      ctx.fillText(levelText, 72, 132);
+    } else {
+      drawBackground(ctx, PALETTES.slate.bg);
     }
 
     action.setImage(canvas.toDataURL('image/png'));

@@ -1,4 +1,5 @@
 import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
+import { CANVAS_SIZE, accentGradient, drawBackground, drawDivider, PALETTES } from '../canvas-style.js';
 
 type PSRecord = {
   script: string;
@@ -36,50 +37,48 @@ export default function (name: string) {
     if (!action) return;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 144;
-    canvas.height = 144;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Background
-    ctx.fillStyle = '#012456'; // PowerShell blue
-    ctx.fillRect(0, 0, 144, 144);
+    let palette = PALETTES.cool;
+    let badge = 'READY';
+    if (status === 'running') {
+      palette = PALETTES.gold;
+      badge = 'RUN';
+    } else if (status === 'done') {
+      palette = PALETTES.green;
+      badge = 'OK';
+    } else if (status === 'error') {
+      palette = PALETTES.rose;
+      badge = 'ERR';
+    }
 
-    // PowerShell-style prompt
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 18px "Cascadia Mono", "Consolas", monospace';
+    drawBackground(ctx, palette.bg);
+
+    // PS prompt header
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'bold 16px "Cascadia Mono", "Consolas", monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('PS>', 12, 12);
+    ctx.fillText('PS>', 14, 14);
+
+    drawDivider(ctx, palette, 40);
 
     // Script label (centered)
     const label = (record[context]?.label || record[context]?.script || 'no script').slice(0, 14);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = accentGradient(ctx, palette);
     ctx.font = 'bold 18px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(label, 72, 76);
+    ctx.fillText(label, 72, 80);
 
     // Status badge
-    let badge = '';
-    let badgeColor = '#a0aec0';
-    if (status === 'running') {
-      badge = 'RUN';
-      badgeColor = '#fbbf24';
-    } else if (status === 'done') {
-      badge = 'OK';
-      badgeColor = '#22c55e';
-    } else if (status === 'error') {
-      badge = 'ERR';
-      badgeColor = '#ef4444';
-    } else {
-      badge = 'READY';
-      badgeColor = '#94a3b8';
-    }
-    ctx.fillStyle = badgeColor;
+    ctx.fillStyle = accentGradient(ctx, palette);
     ctx.font = 'bold 14px "Segoe UI", sans-serif';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(badge, 72, 130);
+    ctx.fillText(badge, 72, 128);
 
     action.setImage(canvas.toDataURL('image/png'));
   };

@@ -1,5 +1,6 @@
 import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
 import { watch } from 'vue';
+import { CANVAS_SIZE, accentGradient, drawBackground, drawDivider, PALETTES } from '../canvas-style.js';
 
 export default function (name: string) {
   const ActionID = `${window.argv[3].plugin.uuid}.${name}`;
@@ -16,86 +17,79 @@ export default function (name: string) {
     if (!action) return;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 144;
-    canvas.height = 144;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
-    // Black background
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 144, 144);
-
     if (status === 'loading') {
-      ctx.fillStyle = '#60A5FA';
+      drawBackground(ctx, PALETTES.cool.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.cool);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
-      ctx.fillText('Loading...', 72, 72);
+      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.fillText('Loading…', 72, 72);
     } else if (status === 'error') {
-      ctx.fillStyle = '#EF4444';
+      drawBackground(ctx, PALETTES.rose.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.rose);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
       ctx.fillText('Error', 72, 60);
-      ctx.font = 'bold 16px "Segoe UI", sans-serif';
-      ctx.fillStyle = '#CCCCCC';
-      ctx.fillText('Check Symbol', 72, 88);
+      ctx.font = 'bold 14px "Segoe UI", sans-serif';
+      ctx.fillText('Check symbol', 72, 88);
     } else if (record[context]?.data) {
       const data = record[context].data;
       const isPositive = parseFloat(data.percentChange) >= 0;
-      const changeColor = isPositive ? '#10B981' : '#EF4444';
+      const palette = isPositive ? PALETTES.green : PALETTES.rose;
 
-      // Stock Symbol (use displayName if available)
-      ctx.fillStyle = '#FFFFFF';
+      drawBackground(ctx, palette.bg);
+
+      // Stock symbol
+      ctx.fillStyle = 'rgba(255,255,255,0.78)';
       ctx.textAlign = 'center';
-      ctx.font = 'bold 18px "Segoe UI", sans-serif';
-      ctx.fillText(data.displayName || data.symbol, 72, 22);
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = 'bold 16px "Segoe UI", sans-serif';
+      ctx.fillText(data.displayName || data.symbol, 72, 24);
 
-      // Divider line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(20, 32);
-      ctx.lineTo(124, 32);
-      ctx.stroke();
+      drawDivider(ctx, palette, 32);
 
-      // Current Price (Close)
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 28px "Segoe UI", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`$${data.close}`, 72, 62);
+      // Current price
+      ctx.fillStyle = accentGradient(ctx, palette);
+      ctx.font = 'bold 26px "Segoe UI", sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`$${data.close}`, 72, 60);
 
-      // Open Price Label
-      ctx.fillStyle = '#AAAAAA';
+      // Open price row
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = 'bold 12px "Segoe UI", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Open', 24, 86);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
       ctx.font = 'bold 14px "Segoe UI", sans-serif';
-      ctx.fillText('Open:', 42, 82);
+      ctx.textAlign = 'right';
+      ctx.fillText(`$${data.open}`, CANVAS_SIZE - 24, 86);
 
-      // Open Price Value
-      ctx.fillStyle = '#CCCCCC';
-      ctx.font = 'bold 18px "Segoe UI", sans-serif';
-      ctx.fillText(`$${data.open}`, 102, 82);
-
-      // Divider line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(20, 92);
-      ctx.lineTo(124, 92);
-      ctx.stroke();
+      drawDivider(ctx, palette, 98);
 
       // Change percentage with arrow
       const arrow = isPositive ? '▲' : '▼';
-      ctx.fillStyle = changeColor;
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
-      ctx.fillText(`${arrow} ${data.percentChange}%`, 72, 118);
+      ctx.fillStyle = accentGradient(ctx, palette);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
+      ctx.fillText(`${arrow} ${data.percentChange}%`, 72, 124);
 
-      // Profit/Loss label (if custom calculation)
       if (data.isCustom) {
-        ctx.fillStyle = '#AAAAAA';
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
         ctx.font = 'bold 10px "Segoe UI", sans-serif';
-        ctx.fillText('Your P/L', 72, 135);
+        ctx.fillText('Your P/L', 72, 138);
       }
+    } else {
+      drawBackground(ctx, PALETTES.cool.bg);
     }
 
     action.setImage(canvas.toDataURL('image/png'));

@@ -197,6 +197,58 @@ const Actions = [
     Controllers: ['Keypad']
   },
   {
+    UUID: 'weather',
+    Icon: 'images/default.png',
+    i18n: {
+      en: {
+        Name: 'Weather',
+        Tooltip: 'Current weather with temperature, RealFeel® and precipitation chart (Open-Meteo)'
+      },
+      zh_CN: {
+        Name: '天气',
+        Tooltip: '显示当前气温、体感温度及降水图表'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
+  },
+  {
+    UUID: 'work-hours',
+    Icon: 'images/default.png',
+    i18n: {
+      en: {
+        Name: 'Work Hours Clock',
+        Tooltip: 'Shows current time and working-hours status (Mon–Fri)'
+      },
+      zh_CN: {
+        Name: '工作时间时钟',
+        Tooltip: '显示当前时间及工作状态（周一至周五）'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
+  },
+  {
     UUID: 'toggle-audio',
     Icon: 'images/Soundbar.png',
     i18n: {

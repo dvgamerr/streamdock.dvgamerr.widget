@@ -1,5 +1,6 @@
 import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
 import { watch } from 'vue';
+import { CANVAS_SIZE, accentGradient, drawBackground, drawDivider, PALETTES } from '../canvas-style.js';
 
 export default function (name: string) {
   const ActionID = `${window.argv[3].plugin.uuid}.${name}`;
@@ -16,61 +17,58 @@ export default function (name: string) {
     if (!action) return;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 144;
-    canvas.height = 144;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
-    // Black background
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 144, 144);
-
     if (status === 'loading') {
-      ctx.fillStyle = '#60A5FA';
+      drawBackground(ctx, PALETTES.cool.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.cool);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
-      ctx.fillText('Loading...', 72, 72);
+      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.fillText('Loading…', 72, 72);
     } else if (status === 'error') {
-      ctx.fillStyle = '#EF4444';
+      drawBackground(ctx, PALETTES.rose.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.rose);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
       ctx.fillText('Error', 72, 60);
-      ctx.font = 'bold 16px "Segoe UI", sans-serif';
-      ctx.fillStyle = '#CCCCCC';
-      ctx.fillText('Check Connection', 72, 88);
+      ctx.font = 'bold 14px "Segoe UI", sans-serif';
+      ctx.fillText('Check connection', 72, 88);
     } else if (record[context]?.data) {
       const data = record[context].data;
       const isPositive = parseFloat(data.ratio) >= 0;
-      const changeColor = isPositive ? '#10B981' : '#EF4444';
+      const palette = isPositive ? PALETTES.green : PALETTES.rose;
+
+      drawBackground(ctx, PALETTES.cool.bg);
 
       // Currency pair
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
       ctx.textAlign = 'center';
-      ctx.font = 'bold 20px "Segoe UI", sans-serif';
-      ctx.fillText(data.code, 72, 28);
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = 'bold 18px "Segoe UI", sans-serif';
+      ctx.fillText(data.code, 72, 30);
 
-      // Divider line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(20, 40);
-      ctx.lineTo(124, 40);
-      ctx.stroke();
+      drawDivider(ctx, PALETTES.cool, 40);
 
       // Price
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 32px "Segoe UI", sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = accentGradient(ctx, PALETTES.cool);
+      ctx.font = 'bold 28px "Segoe UI", sans-serif';
+      ctx.textBaseline = 'middle';
       ctx.fillText(data.price, 72, 78);
 
       // Change percentage with arrow
       const arrow = isPositive ? '▲' : '▼';
-      ctx.fillStyle = changeColor;
-      ctx.font = 'bold 22px "Segoe UI", sans-serif';
-      ctx.fillText(`${arrow} ${data.ratio}`, 72, 110);
+      ctx.fillStyle = accentGradient(ctx, palette);
+      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(`${arrow} ${data.ratio}`, 72, 122);
+    } else {
+      drawBackground(ctx, PALETTES.cool.bg);
     }
 
     action.setImage(canvas.toDataURL('image/png'));

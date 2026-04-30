@@ -1,4 +1,5 @@
 import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
+import { CANVAS_SIZE, accentGradient, drawBackground, drawDivider, PALETTES } from '../canvas-style.js';
 
 export default function (name: string) {
   const ActionID = `${window.argv[3].plugin.uuid}.${name}`;
@@ -56,55 +57,49 @@ export default function (name: string) {
     if (!action) return;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 144;
-    canvas.height = 144;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
-    // Black background
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 144, 144);
-
     if (status === 'error') {
-      ctx.fillStyle = '#EF4444';
+      drawBackground(ctx, PALETTES.rose.bg);
+      ctx.fillStyle = accentGradient(ctx, PALETTES.rose);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 24px "Segoe UI", sans-serif';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
       ctx.fillText('Error', 72, 60);
-      ctx.font = 'bold 16px "Segoe UI", sans-serif';
-      ctx.fillStyle = '#CCCCCC';
-      ctx.fillText('Check Connection', 72, 88);
+      ctx.font = 'bold 14px "Segoe UI", sans-serif';
+      ctx.fillText('Check connection', 72, 88);
     } else {
+      const palette = PALETTES.gold;
+      drawBackground(ctx, palette.bg);
+
       // Calculate price based on currency
       const finalPrice = currency === 'USD' ? price : price * exchangeRate;
-
-      // Format price with commas
       const formattedPrice = finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       // Title: GOLD with currency
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
       ctx.textAlign = 'center';
-      ctx.font = 'bold 20px "Segoe UI", sans-serif';
-      ctx.fillText(`GOLD (${currency})`, 72, 28);
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = 'bold 18px "Segoe UI", sans-serif';
+      ctx.fillText(`GOLD (${currency})`, 72, 30);
 
-      // Divider line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(20, 40);
-      ctx.lineTo(124, 40);
-      ctx.stroke();
+      drawDivider(ctx, palette, 40);
 
       // Price
-      ctx.fillStyle = '#FFD700';
-      ctx.font = `bold ${currency === 'USD' ? '32px' : '24px'} "Segoe UI", sans-serif`;
-      ctx.fillText(formattedPrice, 72, 78);
+      ctx.fillStyle = accentGradient(ctx, palette);
+      ctx.font = `bold ${currency === 'USD' ? '30px' : '24px'} "Segoe UI", sans-serif`;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(formattedPrice, 72, 80);
 
-      // Currency label
-      ctx.fillStyle = '#AAAAAA';
-      ctx.font = 'bold 16px "Segoe UI", sans-serif';
-      ctx.fillText('Spot Tin', 72, 110);
+      // Subtitle
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = 'bold 14px "Segoe UI", sans-serif';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('Spot Tin', 72, 122);
     }
 
     action.setImage(canvas.toDataURL('image/png'));
