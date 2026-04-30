@@ -164,6 +164,47 @@ const Actions = [
     UserTitleEnabled: false,
     SupportedInMultiActions: false,
     Controllers: ['Keypad', 'Information']
+  },
+  {
+    UUID: 'toggle-audio',
+    Icon: 'images/Soundbar.png',
+    i18n: {
+      en: {
+        Name: 'Toggle Audio Device',
+        Tooltip: 'Toggle between two audio playback devices'
+      },
+      zh_CN: {
+        Name: '切换音频设备',
+        Tooltip: '在两个音频播放设备之间切换'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/Soundbar.png'
+      },
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/Headphone.png'
+      },
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/Refresh.png'
+      }
+    ],
+    Settings: {
+      device1Match: '*Sound Blaster GS5*',
+      device1Show: 'Speakers (GS5)',
+      device2Match: '*Sound Blaster X5*',
+      device2Show: 'Headphones (X5)'
+    },
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad']
   }
 ];
 

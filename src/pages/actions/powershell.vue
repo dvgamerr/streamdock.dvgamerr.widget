@@ -15,10 +15,7 @@
   // List of bundled scripts. Keep in sync with public/scripts/*.ps1.
   // Adding a new entry here + dropping a matching <name>.ps1 file into
   // public/scripts/ is all that's needed.
-  const bundledScripts = [
-    { value: 'SleepMonitor', name: 'SleepMonitor.ps1', desc: 'Turns the monitor off (sends WM_SYSCOMMAND SC_MONITORPOWER)' },
-    { value: 'ToggleAudioDevices', name: 'ToggleAudioDevices.ps1', desc: 'Toggles default playback device + toast (needs AudioDeviceCmdlets + BurntToast)' }
-  ];
+  const bundledScripts = [{ value: 'SleepMonitor', name: 'SleepMonitor.ps1', desc: 'Turns the monitor off (sends WM_SYSCOMMAND SC_MONITORPOWER)' }];
 
   const status = ref<string>('');
 

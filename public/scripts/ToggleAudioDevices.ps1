@@ -4,11 +4,26 @@ function Write-Log($msg) { "$(Get-Date -f 'HH:mm:ss') [ToggleAudio] $msg" | Out-
 try { Import-Module AudioDeviceCmdlets -ErrorAction Stop } catch { Write-Log "ERROR import AudioDeviceCmdlets: $_"; exit 1 }
 try { Import-Module BurntToast -ErrorAction Stop } catch { Write-Log "ERROR import BurntToast: $_"; exit 1 }
 
-# Match by substring — survives "(2- ...)" prefix changes from Windows.
-$device1Match = '*Sound Blaster X5*'
-$device1Show  = 'Headphones (X5)'
-$device2Match = '*Sound Blaster GS5*'
-$device2Show  = 'Speakers (GS5)'
+# Read device config from JSON file (written by toggle-audio-apply.vbs via PI "Apply Config").
+# Falls back to built-in defaults if no config file is present.
+$configPath = Join-Path $PSScriptRoot 'toggle-audio-config.json'
+if (Test-Path $configPath) {
+    try {
+        $cfg = Get-Content $configPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $device1Match = $cfg.device1Match
+        $device1Show  = $cfg.device1Show
+        $device2Match = $cfg.device2Match
+        $device2Show  = $cfg.device2Show
+        Write-Log "Config loaded: d1=$device1Match  d2=$device2Match"
+    } catch {
+        Write-Log "Failed to parse config ($configPath): $_"
+        $device1Match = '*Sound Blaster X5*'; $device1Show = 'Headphones (X5)'
+        $device2Match = '*Sound Blaster GS5*'; $device2Show = 'Speakers (GS5)'
+    }
+} else {
+    $device1Match = '*Sound Blaster X5*'; $device1Show = 'Headphones (X5)'
+    $device2Match = '*Sound Blaster GS5*'; $device2Show = 'Speakers (GS5)'
+}
 
 # Dump every playback device once so we can see real names in the log.
 $allPlayback = Get-AudioDevice -List | Where-Object { $_.Type -eq 'Playback' }
@@ -20,7 +35,7 @@ foreach ($d in $allPlayback) {
 $currentDevice = Get-AudioDevice -Playback
 Write-Log "Current default: '$($currentDevice.Name)'"
 
-# Decide target: if current matches device1 → switch to device2, else → device1.
+# Decide target: if current matches device1 -> switch to device2, else -> device1.
 if ($currentDevice.Name -like $device1Match) {
     $targetMatch = $device2Match
     $targetShow  = $device2Show
