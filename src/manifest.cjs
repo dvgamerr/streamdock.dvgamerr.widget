@@ -166,6 +166,37 @@ const Actions = [
     Controllers: ['Keypad', 'Information']
   },
   {
+    UUID: 'sleep-monitor',
+    Icon: 'images/monitor.png',
+    i18n: {
+      en: {
+        Name: 'Sleep Monitor',
+        Tooltip: 'Turn off the monitor; icon resets after 1 minute'
+      },
+      zh_CN: {
+        Name: '关闭显示器',
+        Tooltip: '关闭显示器，1 分钟后图标自动恢复'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/monitor.png'
+      },
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/sleep.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad']
+  },
+  {
     UUID: 'toggle-audio',
     Icon: 'images/Soundbar.png',
     i18n: {

@@ -23,7 +23,7 @@ Operational rules for AI coding agents working in this repo.
 
 - Bundled scripts live in `public/scripts/*.ps1`. They are copied to the plugin folder by `autofile.cjs`, which **also auto-generates a `<name>.vbs` launcher** for every `.ps1` it finds. The `.vbs` wrapper is what the webview opens — it calls `powershell.exe -WindowStyle Hidden` via `WScript.Shell.Run(..., 0, False)` so **no console window flashes** on key press.
 - The webview cannot exec processes directly; it triggers a script by asking the host to `openUrl('file:///<plugin>/scripts/<name>.vbs')`.
-- To add a new script: drop `<name>.ps1` into `public/scripts/`, add a matching entry to `bundledScripts` in `src/pages/actions/powershell.vue`, then run `pnpm build`.
+- To add a new script: drop `<name>.ps1` into `public/scripts/`, add a matching entry to `bundledScripts` in `src/pages/actions/powershell.vue`, then run `bun pligins`.
 - Sample scripts append to `%TEMP%\streamdock-widget-ps.log`; the PI's **Open log** button opens it in Notepad (uses a `.bat` helper since Notepad needs a visible window).
 
 ## Mandatory checks before finishing a task
@@ -31,11 +31,11 @@ Operational rules for AI coding agents working in this repo.
 Always run, in this order, and fix anything that fails:
 
 ```bash
-pnpm format     # prettier .  --write
-pnpm build      # vite build && node ./script/autofile.cjs
+bun format     # prettier .  --write
+bun pligins      # vite build && node ./script/autofile.cjs
 ```
 
-`pnpm build` must complete with no TypeScript or Vite errors. `pnpm format` must leave the working tree clean (or only contain intentional formatting changes).
+`bun pligins` must complete with no TypeScript or Vite errors. `bun format` must leave the working tree clean (or only contain intentional formatting changes).
 
 ## Things to avoid
 
