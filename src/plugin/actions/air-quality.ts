@@ -253,7 +253,7 @@ export default function (name: string) {
       });
   };
 
-  plugin.eventEmitter.subscribe('stopBackground', (data) => {
+  plugin.eventEmitter.subscribe('stopBackground', (data: { device: string }) => {
     // Stop background and release resources
     plugin.stopBackground(data.device);
   });
@@ -262,10 +262,7 @@ export default function (name: string) {
   watch(
     () => Array.from(plugin.devices),
     (newDevices, oldDevices) => {
-      const delDevices = oldDevices.filter((item) => !newDevices.includes(item));
-      delDevices.forEach((device) => {
-        // Clean up removed devices
-      });
+      oldDevices.filter((item) => !newDevices.includes(item));
     },
     { deep: true }
   );

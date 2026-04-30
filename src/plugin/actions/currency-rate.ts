@@ -140,7 +140,7 @@ export default function (name: string) {
       });
   };
 
-  plugin.eventEmitter.subscribe('stopBackground', (data) => {
+  plugin.eventEmitter.subscribe('stopBackground', (data: { device: string }) => {
     // Stop background and release resources
     plugin.stopBackground(data.device);
   });
