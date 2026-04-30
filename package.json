@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "node ./script/autofile.cjs dev && vite",
-    "build": "vite build && node ./script/autofile.cjs",
+    "plugins": "vite build && node ./script/autofile.cjs",
     "format": "prettier . --write"
   },
   "dependencies": {

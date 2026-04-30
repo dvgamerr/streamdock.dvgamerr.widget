@@ -74,8 +74,12 @@ export default function (name: string) {
       plugin.getAction(context)?.setState(record[context].state);
     },
     willDisappear({ context }) {
-      plugin.Untimeout(`toggle-audio-${context}`);
-      delete record[context];
+      const rec = record[context];
+      if (rec) {
+        plugin.Untimeout(`toggle-audio-${context}`);
+        if (rec.state === 2) rec.state = rec.targetState;
+        // Keep record alive so state survives willDisappear/willAppear cycles
+      }
     },
     didReceiveSettings({ context, payload }) {
       applySettings(context, payload?.settings);
