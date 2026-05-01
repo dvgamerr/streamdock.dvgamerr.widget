@@ -2,14 +2,17 @@ import { usePluginStore, useWatchEvent } from '@/hooks/plugin.js';
 
 type SleepRecord = {
   sleeping: boolean;
+  sleepUntil: number;
 };
 
 const SLEEP_DURATION = 60_000;
+const CHECK_INTERVAL = 1_000;
 
 export default function (name: string) {
   const ActionID = `${window.argv[3].plugin.uuid}.${name}`;
   const plugin = usePluginStore();
   const record: Record<string, SleepRecord> = {};
+  const timerKey = (context: string) => `sleep-monitor-${context}`;
 
   const getPluginRoot = () => {
     const href = window.location.href;
@@ -17,29 +20,45 @@ export default function (name: string) {
     return lastSlash === -1 ? href : href.slice(0, lastSlash);
   };
 
-  const wakeUp = (context: string) => {
-    if (!record[context]) return;
-    record[context].sleeping = false;
-    plugin.Untimeout(`sleep-monitor-${context}`);
-    plugin.getAction(context)?.setState(0);
+  const ensureRecord = (context: string) => {
+    if (!record[context]) {
+      record[context] = { sleeping: false, sleepUntil: 0 };
+    }
+    return record[context];
   };
 
-  const wakeUpAll = () => {
+  const syncState = (context: string) => {
+    const rec = record[context];
+    if (!rec) return;
+
+    const sleeping = rec.sleepUntil > Date.now();
+    rec.sleeping = sleeping;
+
+    if (!sleeping) {
+      rec.sleepUntil = 0;
+      plugin.Unterval(timerKey(context));
+    }
+
+    plugin.getAction(context)?.setState(sleeping ? 1 : 0);
+  };
+
+  const syncAllStates = () => {
     for (const context of Object.keys(record)) {
-      if (record[context].sleeping) wakeUp(context);
+      syncState(context);
     }
   };
 
-  // Detect monitor wake: when the WebView becomes visible again after monitor sleep
+  // Reconcile state when the webview starts rendering events again.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') wakeUpAll();
+    if (document.visibilityState === 'visible') syncAllStates();
   });
+  window.addEventListener('focus', syncAllStates);
 
   useWatchEvent('action', {
     ActionID,
     willAppear({ context }) {
-      if (!record[context]) record[context] = { sleeping: false };
-      plugin.getAction(context)?.setState(record[context].sleeping ? 1 : 0);
+      ensureRecord(context);
+      syncState(context);
     },
     willDisappear({ context }) {
       const rec = record[context];
@@ -48,10 +67,12 @@ export default function (name: string) {
       }
     },
     keyUp({ context }) {
-      if (!record[context]) record[context] = { sleeping: false };
-      if (record[context].sleeping) return;
+      const rec = ensureRecord(context);
+      syncState(context);
+      if (rec.sleeping) return;
 
-      record[context].sleeping = true;
+      rec.sleeping = true;
+      rec.sleepUntil = Date.now() + SLEEP_DURATION;
       plugin.getAction(context)?.setState(1);
 
       try {
@@ -60,7 +81,7 @@ export default function (name: string) {
         console.error('sleep-monitor launch error:', err);
       }
 
-      plugin.Timeout(`sleep-monitor-${context}`, SLEEP_DURATION, () => wakeUp(context));
+      plugin.Interval(timerKey(context), CHECK_INTERVAL, () => syncState(context));
     }
   });
 
