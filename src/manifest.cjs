@@ -140,6 +140,32 @@ const Actions = [
     Controllers: ['Keypad', 'Information']
   },
   {
+    UUID: 'claude',
+    Icon: 'images/claude.png',
+    i18n: {
+      en: {
+        Name: 'Claude Usage',
+        Tooltip: 'Display Claude 5-hour usage and toggle to weekly usage on key press'
+      },
+      zh_CN: {
+        Name: 'Claude 使用量',
+        Tooltip: '显示 Claude 5 小时使用量，按键切换到每周使用量'
+      }
+    },
+    state: 0,
+    States: [
+      {
+        FontSize: '10',
+        TitleAlignment: 'bottom',
+        Image: 'images/default.png'
+      }
+    ],
+    Settings: {},
+    UserTitleEnabled: false,
+    SupportedInMultiActions: false,
+    Controllers: ['Keypad', 'Information']
+  },
+  {
     UUID: 'powershell',
     Icon: 'images/default.png',
     i18n: {
