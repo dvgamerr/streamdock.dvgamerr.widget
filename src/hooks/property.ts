@@ -91,6 +91,7 @@ export const usePropertyStore = defineStore('propertyStore', () => {
       canvas.width = image.naturalWidth;
       canvas.height = image.naturalHeight;
       const ctx = canvas.getContext('2d');
+      if (!ctx) return;
       ctx.drawImage(image, 0, 0);
       server.send(JSON.stringify({ event: 'setImage', context: window.argv[4].context, payload: { target: 0, image: canvas.toDataURL('image/png') } }));
     };
@@ -136,8 +137,11 @@ export const useWatchEvent = (MessageEvents: StreamDock.ProperMessage) => {
     () => {
       if (!property.message) return;
       const data = JSON.parse(JSON.stringify(property.message));
-      Events[property.message.event]?.(data);
-      MessageEvents[property.message.event]?.(data);
+      const event = property.message.event as keyof StreamDock.ProperMessage;
+      const internalHandler = Events[event] as ((payload: typeof data) => void) | undefined;
+      const externalHandler = MessageEvents[event] as ((payload: typeof data) => void) | undefined;
+      internalHandler?.(data);
+      externalHandler?.(data);
     }
   );
 };

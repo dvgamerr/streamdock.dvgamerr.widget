@@ -8,5 +8,6 @@ export const useI18nStore = () => {
       'Action Settings': '金价设置'
     }
   };
-  return localString[language] || localString['en'];
+  const key = language in localString ? (language as keyof typeof localString) : 'en';
+  return localString[key];
 };

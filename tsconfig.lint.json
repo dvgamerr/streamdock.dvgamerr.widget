@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "lib": ["ES2020", "DOM"],
+    "target": "ESNext",
+    "module": "NodeNext",
+    "types": ["vite/client", "node"],
+    "moduleResolution": "nodenext",
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+    ,"strictPropertyInitialization": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "vite.config.ts", "src/manifest.cjs", "script/*.cjs"]
+}

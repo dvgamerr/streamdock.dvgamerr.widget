@@ -115,7 +115,7 @@ export const usePluginStore = defineStore('pluginStore', () => {
     settings: {};
     action: string;
     context: string;
-    title: string;
+    title = '';
     titleParameters = {} as titleParameters;
     constructor(action: string, context: string, settings: {}) {
       this.action = action;
@@ -175,6 +175,7 @@ export const usePluginStore = defineStore('pluginStore', () => {
         canvas.width = image.naturalWidth;
         canvas.height = image.naturalHeight;
         const ctx = canvas.getContext('2d');
+        if (!ctx) return;
         ctx.drawImage(image, 0, 0);
         server.send(JSON.stringify({ event: 'setImage', context: this.context, payload: { target: 0, image: canvas.toDataURL('image/png') } }));
       };
@@ -204,7 +205,7 @@ export const usePluginStore = defineStore('pluginStore', () => {
   }
 
   class EventEmitter {
-    events: { [key: string]: any[] };
+    events: { [key: string]: Function[] | undefined };
     constructor() {
       this.events = {};
     }
@@ -221,7 +222,7 @@ export const usePluginStore = defineStore('pluginStore', () => {
     unsubscribe(event: string) {
       if (!this.events[event]) return;
 
-      this.events[event] = null;
+      delete this.events[event];
     }
 
     // Emit event
@@ -271,15 +272,18 @@ export const useWatchEvent = <T extends keyof MessageTypes>(type: T, MessageEven
       () => {
         if (!plugin.message) return;
         if (plugin.message.action) return;
-        MessageEvents[plugin.message.event]?.(JSON.parse(JSON.stringify(plugin.message)));
+        const data = JSON.parse(JSON.stringify(plugin.message));
+        const event = plugin.message.event as keyof StreamDock.PluginMessage;
+        const handler = (MessageEvents as StreamDock.PluginMessage)[event] as ((payload: typeof data) => void) | undefined;
+        handler?.(data);
         if (plugin.message.event === 'didReceiveGlobalSettings') {
           plugin.globalSettings = (plugin.message.payload as payload).settings;
         } else if (plugin.message.event === 'deviceDidConnect') {
           // console.log('Device connected:', plugin.message);
-          plugin.devices.add(plugin.message.device);
+          if (plugin.message.device) plugin.devices.add(plugin.message.device);
         } else if (plugin.message.event === 'deviceDidDisconnect') {
           // console.log('Device disconnected:', plugin.message);
-          plugin.devices.delete(plugin.message.device);
+          if (plugin.message.device) plugin.devices.delete(plugin.message.device);
         } else if (plugin.message.event === 'sendUserInfo') {
           plugin.userInfo = plugin.message.payload;
         }
@@ -295,10 +299,12 @@ export const useWatchEvent = <T extends keyof MessageTypes>(type: T, MessageEven
     },
     didReceiveSettings({ context, payload }) {
       const action = plugin.getAction(context);
+      if (!action) return;
       action.settings = payload.settings;
     },
     titleParametersDidChange({ context, payload }) {
       const action = plugin.getAction(context);
+      if (!action) return;
       action.title = payload.title;
       action.titleParameters = payload.titleParameters;
     }
@@ -307,10 +313,14 @@ export const useWatchEvent = <T extends keyof MessageTypes>(type: T, MessageEven
     () => plugin.message,
     () => {
       if (!plugin.message) return;
-      if (plugin.message.action !== MessageEvents['ActionID']) return;
+      const actionEvents = MessageEvents as StreamDock.ActionMessage;
+      if (plugin.message.action !== actionEvents.ActionID) return;
       const data = JSON.parse(JSON.stringify(plugin.message));
-      Events[plugin.message.event]?.(data);
-      MessageEvents[plugin.message.event]?.(data);
+      const event = plugin.message.event as keyof StreamDock.ActionMessage;
+      const internalHandler = Events[event] as ((payload: typeof data) => void) | undefined;
+      const externalHandler = actionEvents[event] as ((payload: typeof data) => void) | undefined;
+      internalHandler?.(data);
+      externalHandler?.(data);
     }
   );
 };

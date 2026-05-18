@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "node ./script/autofile.cjs dev && vite",
+    "lint": "tsc --noEmit -p tsconfig.lint.json",
     "plugins": "vite build && node ./script/autofile.cjs",
     "format": "prettier . --write"
   },
