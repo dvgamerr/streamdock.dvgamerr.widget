@@ -32,10 +32,28 @@ Always run, in this order, and fix anything that fails:
 
 ```bash
 bun format     # prettier .  --write
-bun pligins      # vite build && node ./script/autofile.cjs
+bun plugins      # vite build && node ./script/autofile.cjs
 ```
 
 `bun pligins` must complete with no TypeScript or Vite errors. `bun format` must leave the working tree clean (or only contain intentional formatting changes).
+
+## Timer system (`public/interval.js`)
+
+`interval.js` is a Web Worker that wraps the native timer APIs (`setInterval`, `setTimeout`, `clearInterval`, `clearTimeout`). It exists because browsers throttle timers in hidden/background tabs — using the Worker keeps periodic refresh reliable even when the StreamDock webview is not in the foreground.
+
+The store exposes four methods (all backed by the Worker):
+
+| Method | When to use |
+|---|---|
+| `plugin.Interval(key, ms, fn)` | Repeating refresh loop — **preferred for fetch loops** |
+| `plugin.Unterval(key)` | Stop a repeating Interval |
+| `plugin.Timeout(key, ms, fn)` | One-shot delay |
+| `plugin.Untimeout(key)` | Cancel a pending Timeout |
+
+**Rules:**
+- Always use `plugin.Interval` for recurring data fetches. Do **not** chain `plugin.Timeout` calls (one-shot chains break silently if any step is skipped).
+- Start the Interval in `willAppear` and stop it (`plugin.Unterval`) in `willDisappear`.
+- Call the fetch once immediately in `willAppear` so the first render doesn't wait for the full interval.
 
 ## Things to avoid
 

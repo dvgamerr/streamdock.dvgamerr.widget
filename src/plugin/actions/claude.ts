@@ -35,7 +35,6 @@ type ClaudeRecord = {
 
 const SERVER_URL = 'http://127.0.0.1:39452/usage';
 const FETCH_INTERVAL = 60_000;
-const RETRY_INTERVAL = 4_000;
 const ANIMATION_INTERVAL = 120;
 const CLAUDE_LOGO_COLOR = '#D97757';
 
@@ -131,9 +130,9 @@ export default function (name: string) {
     });
   };
 
-  const scheduleFetch = (context: string, delay: number) => {
-    plugin.Untimeout(fetchTimerKey(context));
-    plugin.Timeout(fetchTimerKey(context), delay, () => {
+  const startFetchLoop = (context: string) => {
+    plugin.Unterval(fetchTimerKey(context));
+    plugin.Interval(fetchTimerKey(context), FETCH_INTERVAL, () => {
       fetchUsage(context, false);
     });
   };
@@ -150,9 +149,6 @@ export default function (name: string) {
       rec.payload = payload;
       rec.loading = false;
       canvasFunc(context);
-
-      const retrySoon = !payload.usage && !payload.auth?.ok;
-      scheduleFetch(context, retrySoon ? RETRY_INTERVAL : FETCH_INTERVAL);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       rec.loading = false;
@@ -176,7 +172,6 @@ export default function (name: string) {
 
       bootUsageServer(context);
       canvasFunc(context);
-      scheduleFetch(context, RETRY_INTERVAL);
     }
   };
 
@@ -298,12 +293,15 @@ export default function (name: string) {
       drawUsageRing(ctx, hasUsage ? percent : 12, stale, isDead);
       drawClaudeLogo(ctx, context, isDead);
 
-      const resetTime = fiveHour?.reset_text?.match(/\d{2}:\d{2}$/)?.[0] ?? (hasUsage ? `${Math.round(percent)}%` : '--');
+      const timeStr = fiveHour?.reset_text?.match(/\d{2}:\d{2}$/)?.[0] ?? null;
+      const displayText = hasUsage
+        ? timeStr ? `${Math.round(percent)}% ${timeStr}` : `${Math.round(percent)}%`
+        : timeStr ?? '--';
       ctx.fillStyle = isDead ? 'rgba(140,140,140,0.88)' : CLAUDE_LOGO_COLOR;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.font = 'bold 22px "Segoe UI", sans-serif';
-      ctx.fillText(resetTime, 72, 140);
+      ctx.font = 'bold 18px "Segoe UI", sans-serif';
+      ctx.fillText(displayText, 72, 140);
 
       action.setImage(canvas.toDataURL('image/png'));
       return;
@@ -333,10 +331,11 @@ export default function (name: string) {
     willAppear({ context }) {
       ensureRecord(context);
       startAnimation(context);
+      startFetchLoop(context);
       fetchUsage(context, true);
     },
     willDisappear({ context }) {
-      plugin.Untimeout(fetchTimerKey(context));
+      plugin.Unterval(fetchTimerKey(context));
       plugin.Unterval(animationTimerKey(context));
       delete record[context];
     },
